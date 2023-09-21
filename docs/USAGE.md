@@ -12,7 +12,7 @@
 
 ```groovy
 dependencies {
-    implementation "de.otto:kafka-messaging-e2ee:1.0.2"
+    implementation "de.otto:kafka-messaging-e2ee:2.0.0"
 }
 ```
 
