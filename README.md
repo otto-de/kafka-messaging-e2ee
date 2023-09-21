@@ -27,7 +27,7 @@ subject of rotation and each encrypted message carries the version number of the
 
 
 ## Usage
-- see: [Library at Maven Central](https://central.sonatype.com/artifact/de.otto/kafka-messaging-e2ee)
+- see: [kafka-messaging-e2ee at Maven Central](https://central.sonatype.com/artifact/de.otto/kafka-messaging-e2ee)
 - see: [USAGE.md](docs/USAGE.md)
 - see: [Some examples](/examples)
 
