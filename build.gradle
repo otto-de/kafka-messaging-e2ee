@@ -1,0 +1,84 @@
+plugins {
+    // Apply the java-library plugin for API and implementation separation.
+    id 'java-library'
+    // Publish libs to e.g maven-central
+    id 'maven-publish'
+    // sign artefacts before publishing to maven-central
+    id 'signing'
+    // publishing to Nexus that automates creating, closing, and releasing staging repositories
+    id "io.github.gradle-nexus.publish-plugin" version "2.0.0-rc-1"
+}
+
+ext {
+    jopenlibsVaultVersion = '6.1.0'
+    slf4jVersion = '2.0.9'
+    junitVersion = '5.10.0'
+    assertJVersion = '3.24.2'
+}
+
+repositories {
+    // Use Maven Central for resolving dependencies.
+    mavenCentral()
+}
+
+compileJava {
+    sourceCompatibility = 17
+    targetCompatibility = 17
+    // log details of usage of deprecated members or classes.
+    options.deprecation = true
+}
+
+test {
+    useJUnitPlatform()
+}
+
+dependencies {
+    implementation "io.github.jopenlibs:vault-java-driver:${jopenlibsVaultVersion}"
+    implementation "org.slf4j:slf4j-api:${slf4jVersion}"
+
+    // test dependencies
+    testImplementation "org.junit.jupiter:junit-jupiter:${junitVersion}"
+    testImplementation "org.assertj:assertj-core:${assertJVersion}"
+    testImplementation "org.slf4j:slf4j-simple:${slf4jVersion}"
+}
+
+java {
+    // create sources.jar as well
+    withSourcesJar()
+}
+
+jar {
+    manifest {
+        attributes('Implementation-Title': project.name,
+                'Implementation-Version': project.version,
+                'Source-Code-Url': 'https://github.com/otto-de/kafka-messaging-e2ee')
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            pom {
+                description = 'Kafka Messaging End-To-End-Encryption'
+                groupId = 'de.otto'
+
+                scm {
+                    url = "https://github.com/otto-de/kafka-messaging-e2ee"
+                }
+            }
+        }
+    }
+}
+
+nexusPublishing {
+    repositories {
+        sonatype()
+    }
+}
+
+signing {
+    required {  false }
+    sign publishing.publications.mavenJava
+}

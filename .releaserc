@@ -1,0 +1,22 @@
+{
+  "debug": true,
+  "repositoryUrl": "ssh://git@github.com/otto-de/kafka-messaging-e2ee.git",
+  "branches": [
+    { "name": "main" },
+    { "name": "dev", "channel": "dev", "prerelease": true }
+  ],
+  "success": [],
+  "fail": [],
+  "plugins": [
+        "@semantic-release/commit-analyzer",
+        "@semantic-release/release-notes-generator",
+        "@semantic-release/changelog",
+        "@semantic-release/github",
+        ["@semantic-release/exec", {
+            "prepareCmd": "sed -i 's/^version.*/version = ${nextRelease.version}/g' gradle.properties"
+          }],
+        ["@semantic-release/git", {
+            "assets": [ "gradle.properties", "CHANGELOG.md" ]
+          }]
+      ]
+}

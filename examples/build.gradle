@@ -1,0 +1,17 @@
+plugins {
+    // use composeUp and composeDown via grade. See https://github.com/avast/gradle-docker-compose-plugin
+    id 'com.avast.gradle.docker-compose' version '0.17.4'
+}
+
+ext {
+    kafkaE2eeLibraryVersion = "1.0.0"
+}
+
+dockerCompose {
+    localstack {
+        useComposeFiles = ['docker-compose.yaml']
+    }
+    resourcesLocalstack {
+        useComposeFiles = ['docker-compose.yaml']
+    }
+}

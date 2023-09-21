@@ -1,0 +1,114 @@
+version: '2.1'
+
+services:
+  zookeeper:
+    container_name: "example-1-zookeeper"
+    image: bitnami/zookeeper:3.7.0
+    ports:
+      - '2183:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+
+  kafka:
+    container_name: "example-1-kafka"
+    image: bitnami/kafka:3.1.0
+    ports:
+      - '9096:9096'
+      - '9097:9097'
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=CLIENT://:9096,EXTERNAL://:9097
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9096,EXTERNAL://localhost:9097
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
+    depends_on:
+      - zookeeper
+
+  kafka-init:
+    container_name: "example-1-kafka-init"
+    image: bitnami/kafka:3.1.0
+    entrypoint: /bin/sh -c
+    command: >
+      "
+        ## Create Kafka Topics
+        /opt/bitnami/kafka/bin/kafka-topics.sh --create --bootstrap-server kafka:9096 --topic teamOneTopicOne   --partitions 3 --replication-factor 1
+        /opt/bitnami/kafka/bin/kafka-topics.sh --create --bootstrap-server kafka:9096 --topic teamOneTopicThree --partitions 3 --replication-factor 1
+        /opt/bitnami/kafka/bin/kafka-topics.sh --create --bootstrap-server kafka:9096 --topic teamTwoTopicTwo   --partitions 3 --replication-factor 1
+      "
+    depends_on:
+      - kafka
+
+  vault:
+    container_name: "example-1-vault"
+    image: vault:1.12.3
+    ports:
+      - 8200:8200
+    healthcheck:
+      test: wget --quiet http://vault:8200/v1/sys/health -O /dev/null
+      interval: 3s
+      timeout: 20s
+      retries: 20
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=dev-only-token
+      - VAULT_ADDR=http://vault:8200
+
+  vault-init:
+    container_name: "example-1-vault-init"
+    image: vault:1.12.3
+    entrypoint: /bin/sh -c
+    command: >
+      "
+        ## Init Vault
+        ## config galapagos secrets to use Version 2
+        vault secrets enable -version=2 -path=galapagos kv
+        cd /tmp
+
+        ## configure app-role for teamOne
+        vault auth enable -path=approle_teamOne approle
+
+        echo 'path \"auth/approle_teamOne/role/galapagos/secret-id\" {  capabilities = [\"update\"] }' > pol.txt
+        echo 'path \"galapagos/data/local/galapagos_teamOne/teamOneTopicOne\" {  capabilities = [\"read\", \"list\", \"create\", \"update\", \"delete\"] }' >> pol.txt
+        echo 'path \"galapagos/data/local/galapagos_teamOne/teamOneTopicThree\" {  capabilities = [\"read\", \"list\", \"create\", \"update\", \"delete\"] }' >> pol.txt
+        vault policy write teamOne pol.txt
+        rm pol.txt
+        vault write auth/approle_teamOne/role/galapagos token_policies=teamOne
+
+        ## get app-role secrets
+        echo \"##########################################\"
+        echo \"#######  Credentials for Team One  #######\"
+        echo \"##########################################\"
+        vault read auth/approle_teamOne/role/galapagos/role-id
+        vault write -force auth/approle_teamOne/role/galapagos/secret-id
+
+        ## create encryption key for "teamOneTopicOne" topic
+        vault kv put -mount=galapagos local/galapagos_teamOne/teamOneTopicOne encryption_key=fYpQkfYkdgLBpbMAqfoHxzFvB03Liy4XpvWznmCgmSg%3D%0A
+        ## create encryption key for "teamOneTopicThree" topic
+        vault kv put -mount=galapagos local/galapagos_teamOne/teamOneTopicThree encryption_key=fYpQkfYkdgLBpbMAqfoHxzFvB03Liy4XpvWznmCgmSg%3D%0A
+      
+        ## configure app-role for teamTwo
+        vault auth enable -path=approle_teamTwo approle
+      
+        echo 'path \"auth/approle_teamTwo/role/galapagos/secret-id\" {  capabilities = [\"update\"] }' > pol.txt
+        echo 'path \"galapagos/data/local/galapagos_teamTwo/teamTwoTopicTwo\" {  capabilities = [\"read\", \"list\", \"create\", \"update\", \"delete\"] }' >> pol.txt
+        echo 'path \"galapagos/data/local/galapagos_teamOne/teamOneTopicOne\" {  capabilities = [\"read\", \"list\"] }' >> pol.txt
+        vault policy write teamTwo pol.txt
+        rm pol.txt
+        vault write auth/approle_teamTwo/role/galapagos token_policies=teamTwo
+
+        ## get app-role secrets
+        echo \"##########################################\"
+        echo \"#######  Credentials for Team Two  #######\"
+        echo \"##########################################\"
+        vault read auth/approle_teamTwo/role/galapagos/role-id
+        vault write -force auth/approle_teamTwo/role/galapagos/secret-id
+
+        ## create encryption key for "teamTwoTopicTwo" topic
+        vault kv put -mount=galapagos local/galapagos_teamTwo/teamTwoTopicTwo encryption_key=dZs4osqQyFR2CyMk%2FNu5gGfLx5i2Rp9kFSMcc7quNQQ%3D%0A
+      "
+    environment:
+      - VAULT_TOKEN=dev-only-token
+      - VAULT_ADDR=http://vault:8200
+    depends_on:
+      vault:
+        condition: service_healthy

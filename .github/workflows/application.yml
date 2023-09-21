@@ -1,0 +1,89 @@
+name: Library
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/README.md'
+      - '**/CHANGELOG.md'
+      - 'docs/**'
+      - 'examples/**'
+  ## allow manual triggering of builds
+  workflow_dispatch:
+
+## prevent other "deploy_workflow" to run in parallel
+concurrency: deploy_workflow
+
+jobs:
+  javaUnitTest:
+    name: Run Java Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Run Unit Tests
+        run: ./gradlew clean test
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: test-results
+          path: '**/build/reports/tests'
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v4
+        if: always() # always run even if the previous step fails
+        with:
+          report_paths: '**/build/test-results/**/TEST-*.xml'
+
+  semanticRelease:
+    name: Create a new Release
+    needs: [javaUnitTest]
+    runs-on: ubuntu-latest
+    outputs:
+      ## make release info available to other dependent jobs
+      new_release_published: ${{ steps.semantic.outputs.new_release_published }}
+      new_release_version: ${{ steps.semantic.outputs.new_release_version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup git credentials
+        env:
+          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        run: |
+          git config --global credential.helper store
+          echo "https://${PERSONAL_ACCESS_TOKEN}:@github.com" > ~/.git-credentials
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v4.0.0
+        id: semantic # Need an id for output parameters
+        with:
+          semantic_version: 19.0.2
+          extra_plugins: |
+            @semantic-release/changelog
+            @semantic-release/git
+            @semantic-release/exec
+          dry_run: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Show new release version
+        if: steps.semantic.outputs.new_release_published == 'true'
+        run: |
+          echo "New Release Version: ${{ steps.semantic.outputs.new_release_version }}"
+
+  publishLibraries:
+    name: Publish the libraries to Maven Central
+    needs: [semanticRelease]
+    if: needs.semanticRelease.outputs.new_release_published == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ## checkout new created tag e.g. tag/v1.6.4
+          ref: v${{ needs.semanticRelease.outputs.new_release_version }}
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Publish package
+        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository

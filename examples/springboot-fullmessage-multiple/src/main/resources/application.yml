@@ -1,0 +1,53 @@
+logging:
+  level:
+    ## don't show the whole INFO stuff from kafka - we don't care in this example
+    org.apache.kafka: WARN
+
+app:
+  topic:
+    one:
+      name: "teamOneTopicOne"
+    two:
+      name: "teamTwoTopicTwo"
+    three:
+      name: "teamOneTopicThree"
+
+hashicorp:
+  address: http://localhost:8200/
+  token: dev-only-token
+  #approle:
+  #  roleid: ${app.cormorant.roleid}
+  #  secretid: ${app.cormorant.secretid}
+  #  path: approle_cormorant
+  rules:
+    - defaultRule: true
+      encryptionEnabled: false
+      pathPattern: galapagos/local/galapagos_%TEAMNAME%/%TOPICNAME%
+    - topicname: ${app.topic.one.name}
+      teamname: teamOne
+      encryptionEnabled: true
+    - topicname: ${app.topic.two.name}
+      teamname: teamTwo
+      encryptionEnabled: true
+    - topicname: ${app.topic.three.name}
+      encryptionEnabled: false
+
+spring:
+  ## confluent kafka configuration (see: https://docs.spring.io/spring-boot/docs/current/reference/html/messaging.html#messaging.kafka)
+  kafka:
+    bootstrap-servers: "localhost:9097"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+      properties:
+        acks: all
+    consumer:
+      group-id: "springboot-fullmessage-multiple"
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
+      properties:
+        allow.auto.create.topics: false
+    listener:
+      ## number of threads per topic
+      concurrency: 5

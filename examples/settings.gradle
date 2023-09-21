@@ -1,0 +1,5 @@
+rootProject.name = 'messaging.kafka.e2ee.examples'
+
+include('springboot-fullmessage-multiple')
+include('springboot-fullmessage-single')
+include('springboot-fieldlevel-multiple')
