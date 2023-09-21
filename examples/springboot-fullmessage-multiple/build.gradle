@@ -30,7 +30,7 @@ dependencies {
     testImplementation 'org.springframework.kafka:spring-kafka-test'
 
     // include our messaging.kafka.e2ee lib (run "./gradlew clean build publishToMavenLocal" beforehand)
-    implementation "de.otto:messaging.kafka.e2ee:${kafkaE2eeLibraryVersion}"
+    implementation "de.otto:kafka-messaging-e2ee:${kafkaE2eeLibraryVersion}"
 }
 
 tasks.named('test') {

@@ -70,20 +70,3 @@ jobs:
         if: steps.semantic.outputs.new_release_published == 'true'
         run: |
           echo "New Release Version: ${{ steps.semantic.outputs.new_release_version }}"
-
-  publishLibraries:
-    name: Publish the libraries to Maven Central
-    needs: [semanticRelease]
-    if: needs.semanticRelease.outputs.new_release_published == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ## checkout new created tag e.g. tag/v1.6.4
-          ref: v${{ needs.semanticRelease.outputs.new_release_version }}
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      - name: Publish package
-        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository

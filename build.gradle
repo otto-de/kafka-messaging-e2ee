@@ -45,27 +45,43 @@ dependencies {
 java {
     // create sources.jar as well
     withSourcesJar()
+    // create javadoc.jar as well
+    withJavadocJar()
 }
 
 jar {
-    manifest {
-        attributes('Implementation-Title': project.name,
-                'Implementation-Version': project.version,
-                'Source-Code-Url': 'https://github.com/otto-de/kafka-messaging-e2ee')
-    }
+    manifest.attributes provider: 'gradle'
 }
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
+            groupId = 'de.otto'
+            artifactId = 'kafka-messaging-e2ee'
+            description = 'Kafka Messaging End-To-End-Encryption'
             from components.java
-
             pom {
+                name = 'Kafka Messaging E2EE'
                 description = 'Kafka Messaging End-To-End-Encryption'
-                groupId = 'de.otto'
-
+                url = 'https://github.com/otto-de/kafka-messaging-e2ee'
+                licenses {
+                    license {
+                        name = 'The Apache License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'andrekaplick5678'
+                        name = 'Andre Kaplick'
+                        organization = 'OTTO'
+                        organizationUrl = 'https://www.github.com/otto-de'
+                    }
+                }
                 scm {
-                    url = "https://github.com/otto-de/kafka-messaging-e2ee"
+                    connection = 'scm:git:git://github.com:otto-de/kafka-messaging-e2ee.git'
+                    developerConnection = 'scm:git:ssh://github.com:otto-de/kafka-messaging-e2ee.git'
+                    url = 'https://github.com/otto-de/kafka-messaging-e2ee/tree/main'
                 }
             }
         }
@@ -73,12 +89,13 @@ publishing {
 }
 
 nexusPublishing {
+    packageGroup = 'de.otto'
     repositories {
         sonatype()
     }
 }
 
 signing {
-    required {  false }
+//    required {  false }
     sign publishing.publications.mavenJava
 }
