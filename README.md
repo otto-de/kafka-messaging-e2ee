@@ -2,7 +2,7 @@
 
 ## Status
 [![Library](https://github.com/otto-de/kafka-messaging-e2ee/actions/workflows/application.yml/badge.svg)](https://github.com/otto-de/kafka-messaging-e2ee/actions/workflows/application.yml)
-[![Maven Central](https://img.shields.io/maven-central/v/de.otto/kafka-messaging-e2ee?label=maven-central&nbsp;cli)](https://search.maven.org/search?q=g:de.otto%20a:kafka-messaging-e2ee%20v:RELEASE%20p:jar)
+[![Maven Central](https://img.shields.io/maven-central/v/de.otto/kafka-messaging-e2ee?label=maven-central)](https://central.sonatype.com/artifact/de.otto/kafka-messaging-e2ee)
 
 
 ## About
@@ -27,6 +27,7 @@ subject of rotation and each encrypted message carries the version number of the
 
 
 ## Usage
+- see: [Library at Maven Central](https://central.sonatype.com/artifact/de.otto/kafka-messaging-e2ee)
 - see: [USAGE.md](docs/USAGE.md)
 - see: [Some examples](/examples)
 
