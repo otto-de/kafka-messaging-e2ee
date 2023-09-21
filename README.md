@@ -1,10 +1,8 @@
 # Kafka Messaging End-To-End-Encryption library
 
 ## Status
-[![Build](https://github.com/otto-de/kafka-messaging-e2ee/workflows/application.yml/badge.svg)](https://github.com/otto-de/kafka-messaging-e2ee/actions/workflows/application.yml)
+[![Library](https://github.com/otto-de/kafka-messaging-e2ee/actions/workflows/application.yml/badge.svg)](https://github.com/otto-de/kafka-messaging-e2ee/actions/workflows/application.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/de.otto/kafka-messaging-e2ee?label=maven-central&nbsp;cli)](https://search.maven.org/search?q=g:de.otto%20a:kafka-messaging-e2ee%20v:RELEASE%20p:jar)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/otto-de/kafka-messaging-e2ee?label=GitHub&nbsp;Release)](https://github.com/otto-de/kafka-messaging-e2ee/releases)
-![](https://snyk-widget.herokuapp.com/badge/mvn/de.otto/kafka-messaging-e2ee/badge.svg)
 
 
 ## About
