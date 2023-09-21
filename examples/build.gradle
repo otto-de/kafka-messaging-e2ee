@@ -4,7 +4,7 @@ plugins {
 }
 
 ext {
-    kafkaE2eeLibraryVersion = "1.0.0"
+    kafkaE2eeLibraryVersion = "1.0.2"
 }
 
 dockerCompose {

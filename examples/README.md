@@ -16,7 +16,7 @@ cd /repos/kafka-messaging-e2ee/examples
 
 ```bash
 ## (optional) clean old versions of this libraries
-rm -rfv $HOME/.m2/repository/de/otto/messaging-kafka-e2ee
+rm -rfv $HOME/.m2/repository/de/otto/kafka-messaging-e2ee
 
 ## update the libraries in local maven repository
 cd /repos/kafka-messaging-e2ee

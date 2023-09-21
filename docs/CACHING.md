@@ -8,7 +8,7 @@ So in case of a downtime of the central vault the operation of your service is n
 ## Example for a 2nd-Level Vault Cache based on AWS Parameter Store
 
 ```java
-import de.otto.messaging.kafka.e2ee.vault.SecondLevelCacheStorage;
+import de.otto.kafka.messaging.e2ee.vault.SecondLevelCacheStorage;
 
 class SsmVaultCacheStorage implements SecondLevelCacheStorage {
 
@@ -63,7 +63,7 @@ class TheApp {
 ## Example for a 2nd-Level Vault Cache based on AWS Secret Manager
 
 ```java
-import de.otto.messaging.kafka.e2ee.vault.SecondLevelCacheStorage;
+import de.otto.kafka.messaging.e2ee.vault.SecondLevelCacheStorage;
 
 class SecretManagerVaultCacheStorage implements SecondLevelCacheStorage {
 

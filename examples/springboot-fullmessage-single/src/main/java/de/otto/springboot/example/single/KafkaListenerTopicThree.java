@@ -1,11 +1,11 @@
 package de.otto.springboot.example.single;
 
-import static de.otto.messaging.kafka.e2ee.KafkaEncryptionHelper.KAFKA_HEADER_CIPHER_VALUE;
-import static de.otto.messaging.kafka.e2ee.KafkaEncryptionHelper.KAFKA_HEADER_IV_VALUE;
+import static de.otto.kafka.messaging.e2ee.KafkaEncryptionHelper.KAFKA_HEADER_CIPHER_VALUE;
+import static de.otto.kafka.messaging.e2ee.KafkaEncryptionHelper.KAFKA_HEADER_IV_VALUE;
 
-import de.otto.messaging.kafka.e2ee.AesEncryptedPayload;
-import de.otto.messaging.kafka.e2ee.DecryptionService;
-import de.otto.messaging.kafka.e2ee.KafkaEncryptionHelper;
+import de.otto.kafka.messaging.e2ee.AesEncryptedPayload;
+import de.otto.kafka.messaging.e2ee.DecryptionService;
+import de.otto.kafka.messaging.e2ee.KafkaEncryptionHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.annotation.KafkaListener;

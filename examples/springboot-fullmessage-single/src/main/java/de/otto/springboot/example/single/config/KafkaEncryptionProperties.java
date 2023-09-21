@@ -1,7 +1,7 @@
 package de.otto.springboot.example.single.config;
 
-import de.otto.messaging.kafka.e2ee.vault.VaultConnectionConfig;
-import de.otto.messaging.kafka.e2ee.vault.VaultConnectionConfig.VaultAppRole;
+import de.otto.kafka.messaging.e2ee.vault.VaultConnectionConfig;
+import de.otto.kafka.messaging.e2ee.vault.VaultConnectionConfig.VaultAppRole;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;

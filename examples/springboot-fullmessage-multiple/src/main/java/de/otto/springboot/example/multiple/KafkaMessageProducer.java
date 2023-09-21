@@ -1,8 +1,8 @@
 package de.otto.springboot.example.multiple;
 
-import de.otto.messaging.kafka.e2ee.AesEncryptedPayload;
-import de.otto.messaging.kafka.e2ee.EncryptionService;
-import de.otto.messaging.kafka.e2ee.KafkaEncryptionHelper;
+import de.otto.kafka.messaging.e2ee.AesEncryptedPayload;
+import de.otto.kafka.messaging.e2ee.EncryptionService;
+import de.otto.kafka.messaging.e2ee.KafkaEncryptionHelper;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;

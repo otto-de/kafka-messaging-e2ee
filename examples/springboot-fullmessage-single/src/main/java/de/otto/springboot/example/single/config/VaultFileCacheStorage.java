@@ -1,6 +1,6 @@
 package de.otto.springboot.example.single.config;
 
-import de.otto.messaging.kafka.e2ee.vault.SecondLevelCacheStorage;
+import de.otto.kafka.messaging.e2ee.vault.SecondLevelCacheStorage;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;

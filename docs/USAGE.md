@@ -8,6 +8,14 @@
 * [Caching](#caching)
 * [Key Rotation](#key-rotation)
 
+## Include Library to your build
+
+```groovy
+dependencies {
+    implementation "de.otto:kafka-messaging-e2ee:1.0.2"
+}
+```
+
 ## Step 0: create an EncryptionKeyProvider
 
 ### Option 1: Use SingleTopicVaultEncryptionKeyProviderConfig for simple use cases.
@@ -73,8 +81,8 @@ class Example {
 
 ### Step 1: create a EncryptionService and/or DecryptionService
 
-The main class you need is a [EncryptionService](../src/main/java/de/otto/messaging/kafka/e2ee/EncryptionService.java)
-and/or [DecryptionService](../src/main/java/de/otto/messaging/kafka/e2ee/DecryptionService.java).
+The main class you need is a [EncryptionService](../src/main/java/de/otto/kafka/messaging/e2ee/EncryptionService.java)
+and/or [DecryptionService](../src/main/java/de/otto/kafka/messaging/e2ee/DecryptionService.java).
 
 ```java
 class Example {
@@ -172,11 +180,11 @@ class Example {
 
 ### Step 1: create a SingleTopicFieldLevelEncryptionService and/or SingleTopicFieldLevelDecryptionService
 
-The main class you need is a [SingleTopicFieldLevelEncryptionService](../src/main/java/de/otto/messaging/kafka/e2ee/fieldlevel/SingleTopicFieldLevelEncryptionService.java)
-and/or [SingleTopicFieldLevelDecryptionService](../src/main/java/de/otto/messaging/kafka/e2ee/fieldlevel/SingleTopicFieldLevelDecryptionService.java).
+The main class you need is a [SingleTopicFieldLevelEncryptionService](../src/main/java/de/otto/kafka/messaging/e2ee/fieldlevel/SingleTopicFieldLevelEncryptionService.java)
+and/or [SingleTopicFieldLevelDecryptionService](../src/main/java/de/otto/kafka/messaging/e2ee/fieldlevel/SingleTopicFieldLevelDecryptionService.java).
 
-You can also use the classes [FieldLevelEncryptionService](../src/main/java/de/otto/messaging/kafka/e2ee/fieldlevel/FieldLevelEncryptionService.java)
-and/or [FieldLevelDecryptionService](../src/main/java/de/otto/messaging/kafka/e2ee/fieldlevel/FieldLevelDecryptionService.java).
+You can also use the classes [FieldLevelEncryptionService](../src/main/java/de/otto/kafka/messaging/e2ee/fieldlevel/FieldLevelEncryptionService.java)
+and/or [FieldLevelDecryptionService](../src/main/java/de/otto/kafka/messaging/e2ee/fieldlevel/FieldLevelDecryptionService.java).
 
 ```java
 class Example {

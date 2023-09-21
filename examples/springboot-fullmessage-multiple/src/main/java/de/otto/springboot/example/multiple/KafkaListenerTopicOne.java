@@ -1,8 +1,8 @@
 package de.otto.springboot.example.multiple;
 
-import de.otto.messaging.kafka.e2ee.AesEncryptedPayload;
-import de.otto.messaging.kafka.e2ee.DecryptionService;
-import de.otto.messaging.kafka.e2ee.KafkaEncryptionHelper;
+import de.otto.kafka.messaging.e2ee.AesEncryptedPayload;
+import de.otto.kafka.messaging.e2ee.DecryptionService;
+import de.otto.kafka.messaging.e2ee.KafkaEncryptionHelper;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

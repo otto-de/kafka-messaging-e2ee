@@ -4,7 +4,7 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.0'
 }
 
-group = 'de.otto.messaging.kafka.e2ee.examples'
+group = 'de.otto.kafka.messaging.e2ee.examples'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 
@@ -29,7 +29,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
 
-    // include our messaging.kafka.e2ee lib (run "./gradlew clean build publishToMavenLocal" beforehand)
+    // include our kafka-messaging-e2ee lib (run "./gradlew publishToMavenLocal" beforehand)
     implementation "de.otto:kafka-messaging-e2ee:${kafkaE2eeLibraryVersion}"
 }
 

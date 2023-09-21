@@ -1,16 +1,16 @@
 package de.otto.springboot.example.fieldlevel.multiple.config;
 
-import de.otto.messaging.kafka.e2ee.DecryptionService;
-import de.otto.messaging.kafka.e2ee.EncryptionKeyProvider;
-import de.otto.messaging.kafka.e2ee.EncryptionService;
-import de.otto.messaging.kafka.e2ee.fieldlevel.FieldLevelDecryptionService;
-import de.otto.messaging.kafka.e2ee.fieldlevel.FieldLevelEncryptionService;
-import de.otto.messaging.kafka.e2ee.vault.CachedEncryptionKeyProvider;
-import de.otto.messaging.kafka.e2ee.vault.MultiTopicVaultEncryptionKeyProviderConfig;
-import de.otto.messaging.kafka.e2ee.vault.MultiTopicVaultEncryptionKeyProviderConfig.KafkaTopicConfigEntry;
-import de.otto.messaging.kafka.e2ee.vault.VaultConnectionConfig;
-import de.otto.messaging.kafka.e2ee.vault.VaultEncryptionKeyProvider;
-import de.otto.messaging.kafka.e2ee.vault.VaultEncryptionKeyProviderConfig;
+import de.otto.kafka.messaging.e2ee.DecryptionService;
+import de.otto.kafka.messaging.e2ee.EncryptionKeyProvider;
+import de.otto.kafka.messaging.e2ee.EncryptionService;
+import de.otto.kafka.messaging.e2ee.fieldlevel.FieldLevelDecryptionService;
+import de.otto.kafka.messaging.e2ee.fieldlevel.FieldLevelEncryptionService;
+import de.otto.kafka.messaging.e2ee.vault.CachedEncryptionKeyProvider;
+import de.otto.kafka.messaging.e2ee.vault.MultiTopicVaultEncryptionKeyProviderConfig;
+import de.otto.kafka.messaging.e2ee.vault.MultiTopicVaultEncryptionKeyProviderConfig.KafkaTopicConfigEntry;
+import de.otto.kafka.messaging.e2ee.vault.VaultConnectionConfig;
+import de.otto.kafka.messaging.e2ee.vault.VaultEncryptionKeyProvider;
+import de.otto.kafka.messaging.e2ee.vault.VaultEncryptionKeyProviderConfig;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

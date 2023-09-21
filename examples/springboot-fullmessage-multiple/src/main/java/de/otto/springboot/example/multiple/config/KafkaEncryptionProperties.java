@@ -1,8 +1,8 @@
 package de.otto.springboot.example.multiple.config;
 
-import de.otto.messaging.kafka.e2ee.vault.MultiTopicVaultEncryptionKeyProviderConfig.KafkaTopicConfigEntry;
-import de.otto.messaging.kafka.e2ee.vault.VaultConnectionConfig;
-import de.otto.messaging.kafka.e2ee.vault.VaultConnectionConfig.VaultAppRole;
+import de.otto.kafka.messaging.e2ee.vault.MultiTopicVaultEncryptionKeyProviderConfig.KafkaTopicConfigEntry;
+import de.otto.kafka.messaging.e2ee.vault.VaultConnectionConfig;
+import de.otto.kafka.messaging.e2ee.vault.VaultConnectionConfig.VaultAppRole;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;

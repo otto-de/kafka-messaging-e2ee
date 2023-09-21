@@ -7,11 +7,11 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.otto.messaging.kafka.e2ee.EncryptionKeyProvider;
-import de.otto.messaging.kafka.e2ee.EncryptionKeyProvider.KeyVersion;
-import de.otto.messaging.kafka.e2ee.EncryptionService;
-import de.otto.messaging.kafka.e2ee.InitializationVectorFactory;
-import de.otto.messaging.kafka.e2ee.fieldlevel.FieldLevelEncryptionService;
+import de.otto.kafka.messaging.e2ee.EncryptionKeyProvider;
+import de.otto.kafka.messaging.e2ee.EncryptionKeyProvider.KeyVersion;
+import de.otto.kafka.messaging.e2ee.EncryptionService;
+import de.otto.kafka.messaging.e2ee.InitializationVectorFactory;
+import de.otto.kafka.messaging.e2ee.fieldlevel.FieldLevelEncryptionService;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;

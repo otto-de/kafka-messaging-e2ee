@@ -8,8 +8,8 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.otto.messaging.kafka.e2ee.EncryptionKeyProvider;
-import de.otto.messaging.kafka.e2ee.fieldlevel.FieldLevelDecryptionService;
+import de.otto.kafka.messaging.e2ee.EncryptionKeyProvider;
+import de.otto.kafka.messaging.e2ee.fieldlevel.FieldLevelDecryptionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

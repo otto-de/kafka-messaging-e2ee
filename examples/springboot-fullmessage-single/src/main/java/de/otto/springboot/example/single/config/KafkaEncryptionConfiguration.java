@@ -1,13 +1,13 @@
 package de.otto.springboot.example.single.config;
 
-import de.otto.messaging.kafka.e2ee.DecryptionService;
-import de.otto.messaging.kafka.e2ee.EncryptionKeyProvider;
-import de.otto.messaging.kafka.e2ee.EncryptionService;
-import de.otto.messaging.kafka.e2ee.vault.CachedEncryptionKeyProvider;
-import de.otto.messaging.kafka.e2ee.vault.SingleTopicVaultEncryptionKeyProviderConfig;
-import de.otto.messaging.kafka.e2ee.vault.VaultConnectionConfig;
-import de.otto.messaging.kafka.e2ee.vault.VaultEncryptionKeyProvider;
-import de.otto.messaging.kafka.e2ee.vault.VaultEncryptionKeyProviderConfig;
+import de.otto.kafka.messaging.e2ee.DecryptionService;
+import de.otto.kafka.messaging.e2ee.EncryptionKeyProvider;
+import de.otto.kafka.messaging.e2ee.EncryptionService;
+import de.otto.kafka.messaging.e2ee.vault.CachedEncryptionKeyProvider;
+import de.otto.kafka.messaging.e2ee.vault.SingleTopicVaultEncryptionKeyProviderConfig;
+import de.otto.kafka.messaging.e2ee.vault.VaultConnectionConfig;
+import de.otto.kafka.messaging.e2ee.vault.VaultEncryptionKeyProvider;
+import de.otto.kafka.messaging.e2ee.vault.VaultEncryptionKeyProviderConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
