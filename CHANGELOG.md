@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.0.0...v2.0.1) (2023-09-22)
+
+
+### Bug Fixes
+
+* **codeStyle:** make classes "final" so nobody can alter them. Create ReadonlyVaultApi interface so UnitTests become more easy. ([c47b918](https://github.com/otto-de/kafka-messaging-e2ee/commit/c47b9189fb7c54808b11752a5acae1cf5eb56ccf))
+
 # [2.0.0](https://github.com/otto-de/kafka-messaging-e2ee/compare/v1.0.1...v2.0.0) (2023-09-21)
 
 
