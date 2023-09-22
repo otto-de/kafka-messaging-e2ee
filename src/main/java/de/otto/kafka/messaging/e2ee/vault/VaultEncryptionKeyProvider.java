@@ -15,12 +15,12 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class VaultEncryptionKeyProvider implements EncryptionKeyProvider {
+public final class VaultEncryptionKeyProvider implements EncryptionKeyProvider {
 
   private static final Logger log = LoggerFactory.getLogger(VaultEncryptionKeyProvider.class);
 
   private final VaultEncryptionKeyProviderConfig config;
-  private RenewableVault vault;
+  private ReadonlyVaultApi vault;
 
   public VaultEncryptionKeyProvider(
       VaultEncryptionKeyProviderConfig config) {
@@ -37,7 +37,7 @@ public class VaultEncryptionKeyProvider implements EncryptionKeyProvider {
     LogicalResponse response;
     String path = getPathForTopic(kafkaTopicName);
     try {
-      RenewableVault theVault = getOrCreateVault();
+      ReadonlyVaultApi theVault = getOrCreateVault();
       response = theVault.read(path);
       validateResponse(response, () -> "path '" + path + "'");
     } catch (VaultException ex) {
@@ -74,7 +74,7 @@ public class VaultEncryptionKeyProvider implements EncryptionKeyProvider {
     LogicalResponse response;
     String path = getPathForTopic(topic);
     try {
-      RenewableVault theVault = getOrCreateVault();
+      ReadonlyVaultApi theVault = getOrCreateVault();
       response = theVault.read(path, version);
       validateResponse(response, () -> "path '" + path + "' and version '" + version + "'");
     } catch (VaultException ex) {
@@ -166,9 +166,9 @@ public class VaultEncryptionKeyProvider implements EncryptionKeyProvider {
     return config.vaultPath(kafkaTopicName);
   }
 
-  private RenewableVault getOrCreateVault() throws VaultException {
+  private ReadonlyVaultApi getOrCreateVault() throws VaultException {
     if (vault == null) {
-      this.vault = config.createRenewableVault();
+      this.vault = config.createReadonlyVault();
     }
     return vault;
   }

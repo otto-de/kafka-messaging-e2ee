@@ -11,7 +11,7 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RenewableVault {
+public final class RenewableVault implements ReadonlyVaultApi {
 
   private static final Logger log = LoggerFactory.getLogger(RenewableVault.class);
 
@@ -42,11 +42,13 @@ public class RenewableVault {
     this.appRoleConfig = null;
   }
 
+  @Override
   public LogicalResponse read(String path) throws VaultException {
     renewAuthTokenIfNeeded();
     return vault.logical().read(path);
   }
 
+  @Override
   public LogicalResponse read(String path, int version) throws VaultException {
     renewAuthTokenIfNeeded();
     return vault.logical().read(path, true, version);

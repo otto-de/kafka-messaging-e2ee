@@ -1,18 +1,17 @@
 package de.otto.kafka.messaging.e2ee.helper;
 
 import de.otto.kafka.messaging.e2ee.vault.VaultEncryptionKeyProviderConfig;
-import io.github.jopenlibs.vault.VaultConfig;
 
 public class DummyVaultEncryptionKeyProviderConfig implements VaultEncryptionKeyProviderConfig {
 
   private final DummyVault dummyVault;
 
   public DummyVaultEncryptionKeyProviderConfig() {
-    this.dummyVault = new DummyVault(new VaultConfig());
+    this.dummyVault = new DummyVault();
   }
 
   @Override
-  public DummyVault createRenewableVault() {
+  public DummyVault createReadonlyVault() {
     return dummyVault;
   }
 

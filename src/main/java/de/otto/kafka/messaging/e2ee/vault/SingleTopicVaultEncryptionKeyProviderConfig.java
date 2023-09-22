@@ -3,7 +3,7 @@ package de.otto.kafka.messaging.e2ee.vault;
 import io.github.jopenlibs.vault.VaultException;
 import java.util.Objects;
 
-public class SingleTopicVaultEncryptionKeyProviderConfig
+public final class SingleTopicVaultEncryptionKeyProviderConfig
     implements VaultEncryptionKeyProviderConfig {
 
   private final boolean isEncryptedTopic;
@@ -42,7 +42,7 @@ public class SingleTopicVaultEncryptionKeyProviderConfig
   }
 
   @Override
-  public RenewableVault createRenewableVault() {
+  public RenewableVault createReadonlyVault() {
     try {
       return vaultConnectionConfig.createRenewableVault();
     } catch (VaultException e) {

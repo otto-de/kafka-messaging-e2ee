@@ -10,7 +10,7 @@ import java.util.Base64;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-public class FieldLevelDecryptionService {
+public final class FieldLevelDecryptionService {
 
   private final DecryptionService decryptionService;
 

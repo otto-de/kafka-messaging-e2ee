@@ -10,7 +10,7 @@ import java.security.Key;
 import java.util.Objects;
 import javax.crypto.spec.SecretKeySpec;
 
-public class EncryptionService {
+public final class EncryptionService {
 
   private final EncryptionKeyProvider encryptionKeyProvider;
   private final InitializationVectorFactory initializationVectorFactory;

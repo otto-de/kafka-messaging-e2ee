@@ -9,7 +9,7 @@ import java.security.Key;
 import java.util.Objects;
 import javax.crypto.spec.SecretKeySpec;
 
-public class DecryptionService {
+public final class DecryptionService {
 
   private final EncryptionKeyProvider encryptionKeyProvider;
   private final Cache<TopicKeyVersion, Key> aesKeyCache;

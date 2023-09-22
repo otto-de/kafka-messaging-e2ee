@@ -5,7 +5,7 @@ import static de.otto.kafka.messaging.e2ee.DefaultAesEncryptionConfiguration.GCM
 import java.security.SecureRandom;
 import java.util.Random;
 
-public class SecureRandomInitializationVectorFactory implements InitializationVectorFactory {
+public final class SecureRandomInitializationVectorFactory implements InitializationVectorFactory {
 
   @Override
   public byte[] generateInitializationVector() {

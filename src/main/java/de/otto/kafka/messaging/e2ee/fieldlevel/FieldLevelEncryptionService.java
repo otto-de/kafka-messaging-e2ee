@@ -9,7 +9,7 @@ import de.otto.kafka.messaging.e2ee.EncryptionService;
 import java.util.Base64;
 import java.util.Objects;
 
-public class FieldLevelEncryptionService {
+public final class FieldLevelEncryptionService {
 
   private final EncryptionService encryptionService;
 

@@ -4,7 +4,7 @@ public interface VaultEncryptionKeyProviderConfig {
 
   String DEFAULT_ENCRYPTION_KEY_ATTRIBUTE_NAME = "encryption_key";
 
-  RenewableVault createRenewableVault();
+  ReadonlyVaultApi createReadonlyVault();
 
   boolean isEncryptedTopic(String kafkaTopicName);
 

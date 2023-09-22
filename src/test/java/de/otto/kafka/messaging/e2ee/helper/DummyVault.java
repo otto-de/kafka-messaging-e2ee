@@ -1,7 +1,6 @@
 package de.otto.kafka.messaging.e2ee.helper;
 
-import de.otto.kafka.messaging.e2ee.vault.RenewableVault;
-import io.github.jopenlibs.vault.VaultConfig;
+import de.otto.kafka.messaging.e2ee.vault.ReadonlyVaultApi;
 import io.github.jopenlibs.vault.api.Logical.logicalOperations;
 import io.github.jopenlibs.vault.response.LogicalResponse;
 import io.github.jopenlibs.vault.rest.RestResponse;
@@ -10,13 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class DummyVault extends RenewableVault {
+public class DummyVault implements ReadonlyVaultApi {
 
   private final List<DataVersion> vaultData = new ArrayList<>();
-
-  public DummyVault(VaultConfig configAuth) {
-    super(configAuth);
-  }
 
   public void setPathValue(String path, String value, int version) {
     this.vaultData.add(new DataVersion(path, value, version));

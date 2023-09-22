@@ -8,6 +8,7 @@ import de.otto.kafka.messaging.e2ee.vault.SingleTopicVaultEncryptionKeyProviderC
 import de.otto.kafka.messaging.e2ee.vault.VaultConnectionConfig;
 import de.otto.kafka.messaging.e2ee.vault.VaultEncryptionKeyProvider;
 import de.otto.kafka.messaging.e2ee.vault.VaultEncryptionKeyProviderConfig;
+import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,7 +40,8 @@ public class KafkaEncryptionConfiguration {
       VaultFileCacheStorage vaultFileCacheStorage) {
     VaultEncryptionKeyProvider encryptionKeyProvider = new VaultEncryptionKeyProvider(
         vaultEncryptionKeyProviderConfig);
-    return new CachedEncryptionKeyProvider(encryptionKeyProvider, vaultFileCacheStorage);
+    Duration cachingDuration = Duration.ofHours(8);
+    return new CachedEncryptionKeyProvider(encryptionKeyProvider, vaultFileCacheStorage, cachingDuration);
   }
 
   @Bean

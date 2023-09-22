@@ -4,7 +4,7 @@ import de.otto.kafka.messaging.e2ee.EncryptionKeyProvider.KeyVersion;
 import java.util.Base64;
 import java.util.Objects;
 
-public class AesEncryptedPayload {
+public final class AesEncryptedPayload {
 
   private final byte[] encryptedPayload;
   private final byte[] initializationVector;

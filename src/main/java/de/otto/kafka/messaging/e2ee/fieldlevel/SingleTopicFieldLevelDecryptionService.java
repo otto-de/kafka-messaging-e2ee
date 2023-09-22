@@ -4,7 +4,7 @@ import de.otto.kafka.messaging.e2ee.DecryptionService;
 import de.otto.kafka.messaging.e2ee.EncryptionKeyProvider;
 import java.util.Objects;
 
-public class SingleTopicFieldLevelDecryptionService {
+public final class SingleTopicFieldLevelDecryptionService {
 
   private final FieldLevelDecryptionService fieldLevelDecryptionService;
   private final String kafkaTopicName;

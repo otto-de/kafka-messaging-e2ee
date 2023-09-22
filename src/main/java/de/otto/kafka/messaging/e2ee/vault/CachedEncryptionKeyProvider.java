@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * This class is intended to be used as a 2nd-Level-Cache for the vault access. Meaning the results
  * of all method calls should be cached with a 1st-Level-Cache.
  */
-public class CachedEncryptionKeyProvider implements EncryptionKeyProvider {
+public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider {
 
   private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mmX");
   private static final Logger log = LoggerFactory.getLogger(CachedEncryptionKeyProvider.class);
@@ -42,16 +42,6 @@ public class CachedEncryptionKeyProvider implements EncryptionKeyProvider {
   private final SecondLevelCacheStorage cacheStorage;
   private final Clock clock;
   private final Duration cachingDuration;
-
-  /**
-   * @param realEncryptionKeyProvider the VaultEncryptionKeyProvider
-   * @param cacheStorage              the 2nd-level cache storage
-   */
-  public CachedEncryptionKeyProvider(
-      EncryptionKeyProvider realEncryptionKeyProvider,
-      SecondLevelCacheStorage cacheStorage) {
-    this(realEncryptionKeyProvider, cacheStorage, Clock.systemDefaultZone(), Duration.ofHours(2));
-  }
 
   /**
    * @param realEncryptionKeyProvider the VaultEncryptionKeyProvider
@@ -345,7 +335,7 @@ public class CachedEncryptionKeyProvider implements EncryptionKeyProvider {
     }
 
     if (matchingCurrentBestValues.size() > 1) {
-      throw new VaultRuntimeException("None deterministic encryption key.");
+      throw new VaultRuntimeException("None deterministic encryption key. May clear your 2nd-Level-Cache to resolve the issue.");
     }
 
     return currentBestValue;

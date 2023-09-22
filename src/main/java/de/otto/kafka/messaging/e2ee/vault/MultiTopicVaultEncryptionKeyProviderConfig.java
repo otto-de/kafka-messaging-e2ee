@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
-public class MultiTopicVaultEncryptionKeyProviderConfig implements
+public final class MultiTopicVaultEncryptionKeyProviderConfig implements
     VaultEncryptionKeyProviderConfig {
 
   private final VaultConnectionConfig vaultConnectionConfig;
@@ -27,7 +27,7 @@ public class MultiTopicVaultEncryptionKeyProviderConfig implements
   }
 
   @Override
-  public RenewableVault createRenewableVault() {
+  public RenewableVault createReadonlyVault() {
     try {
       return vaultConnectionConfig.createRenewableVault();
     } catch (VaultException e) {
