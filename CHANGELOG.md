@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.0.1...v2.1.0) (2023-10-04)
+
+
+### Features
+
+* **specUpdate:** Updated to Kafka Headers of specification version 2. Use new "ce_encryption.ref.*" headers. ([11a9bff](https://github.com/otto-de/kafka-messaging-e2ee/commit/11a9bff9bc324a480e832d271d8af3108db9dc68))
+
 ## [2.0.1](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.0.0...v2.0.1) (2023-09-22)
 
 
