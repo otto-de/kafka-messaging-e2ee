@@ -12,7 +12,7 @@
 
 ```groovy
 dependencies {
-    implementation "de.otto:kafka-messaging-e2ee:2.0.0"
+    implementation "de.otto:kafka-messaging-e2ee:2.1.0"
 }
 ```
 
@@ -113,6 +113,7 @@ class Example {
     Map<String, byte[]> kafkaHeaders = null;
     if (aesEncryptedPayload.isEncrypted()) {
       kafkaHeaders = KafkaEncryptionHelper.mapToKafkaHeadersForValue(aesEncryptedPayload);
+      System.out.println("Kafka Headers: " + kafkaHeaders);
     }
   }
 }
@@ -126,11 +127,15 @@ class Example {
 class Example {
 
   void example() {
-    // meta data attributes for Kafka Headers (values can be String or byte[])
+    // metadata attributes for Kafka Headers (values can be String or byte[])
     String kafkaTopicName = "some-topic";
     Map<String, Object> kafkaHeaders = new HashMap<>();
-    kafkaHeaders.put(KafkaEncryptionHelper.KAFKA_HEADER_CIPHER_VALUE, "[{\"encryption_key\":{\"cipherVersionString\":null,\"cipherVersion\":3,\"cipherName\":\"encryption_key\"}}]");
     kafkaHeaders.put(KafkaEncryptionHelper.KAFKA_HEADER_IV_VALUE, "2rW2tDnRdwRg87Ta");
+    kafkaHeaders.put(KafkaEncryptionHelper.KAFKA_HEADER_CIPHER_VALUE, "[{\"encryption_key\":{\"cipherVersionString\":null,\"cipherVersion\":3,\"cipherName\":\"encryption_key\"}}]");
+    kafkaHeaders.put(KafkaEncryptionHelper.KAFKA_CE_HEADER_IV_VALUE, "2rW2tDnRdwRg87Ta");
+    kafkaHeaders.put(KafkaEncryptionHelper.KAFKA_CE_HEADER_CIPHER_VERSION_VALUE, "3");
+    kafkaHeaders.put(KafkaEncryptionHelper.KAFKA_CE_HEADER_CIPHER_NAME_VALUE, "encryption_key");
+
     // the encrypted payload
     byte[] encryptedPayloadByteArray = Base64.getDecoder().decode("6ttHpHYw7eYQ1OnvrhZAFi0PPsUGl9NR18hXFQ==");
 
@@ -153,15 +158,20 @@ class Example {
   void example() {
     // meta data attributes for Kafka Headers
     String kafkaTopicName = "some-topic";
-    byte[] cipherConfigRawKafkaHeaderValue = kafkaHeaders.get(KafkaEncryptionHelper.KAFKA_HEADER_CIPHER_VALUE);
-    byte[] ivRawKafkaHeaderValue = kafkaHeaders.get(KafkaEncryptionHelper.KAFKA_HEADER_IV_VALUE);
+    byte[] kafkaHeaderInitializationVector = kafkaHeaders.get(KafkaEncryptionHelper.KAFKA_HEADER_IV_VALUE);
+    byte[] kafkaHeaderCiphersText = kafkaHeaders.get(KafkaEncryptionHelper.KAFKA_HEADER_CIPHER_VALUE);
+    byte[] kafkaCeHeaderInitializationVector = kafkaHeaders.get(KafkaEncryptionHelper.KAFKA_CE_HEADER_IV_VALUE);
+    byte[] kafkaCeHeaderCipherVersion = kafkaHeaders.get(KafkaEncryptionHelper.KAFKA_CE_HEADER_CIPHER_VERSION_VALUE);
+    byte[] kafkaCeHeaderCipherName = kafkaHeaders.get(KafkaEncryptionHelper.KAFKA_CE_HEADER_CIPHER_NAME_VALUE);
+
     // the encrypted payload
     byte[] encryptedPayloadByteArray = Base64.getDecoder().decode("6ttHpHYw7eYQ1OnvrhZAFi0PPsUGl9NR18hXFQ==");
 
     // perform decryption
-    byte[] iv = KafkaEncryptionHelper.extractIv(ivRawKafkaHeaderValue);
-    EncryptionCipherSpec cipherSpec = KafkaEncryptionHelper.extractCipherSpec(cipherConfigRawKafkaHeaderValue);
-    AesEncryptedPayload encryptedPayload = AesEncryptedPayload.ofEncryptedPayload(payload, iv, cipherSpec);
+    AesEncryptedPayload encryptedPayload = KafkaEncryptionHelper.aesEncryptedPayloadOfKafka(
+        encryptedPayloadByteArray, kafkaHeaderInitializationVector, kafkaHeaderCiphersText,
+        kafkaCeHeaderInitializationVector, kafkaCeHeaderCipherVersion, kafkaCeHeaderCipherName
+    );
     String plainText = decryptionService.decryptToString(kafkaTopicName, encryptedPayload);
 
     // print result

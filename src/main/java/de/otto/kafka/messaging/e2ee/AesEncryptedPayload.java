@@ -4,6 +4,12 @@ import de.otto.kafka.messaging.e2ee.EncryptionKeyProvider.KeyVersion;
 import java.util.Base64;
 import java.util.Objects;
 
+/**
+ * record to hold all the data needed for an encrypted payload. But it can also hold an unencrypted
+ * payload.
+ *
+ * @see #isEncrypted()
+ */
 public final class AesEncryptedPayload {
 
   private final byte[] encryptedPayload;
@@ -11,6 +17,9 @@ public final class AesEncryptedPayload {
   private final int keyVersion;
   private final String encryptionKeyAttributeName;
 
+  /**
+   * @param plainPayload the plain text as byte array.
+   */
   public AesEncryptedPayload(byte[] plainPayload) {
     this.encryptedPayload = plainPayload;
     this.initializationVector = null;
@@ -18,10 +27,22 @@ public final class AesEncryptedPayload {
     this.encryptionKeyAttributeName = null;
   }
 
+  /**
+   * @param encryptedPayload     an encrypted payload as byte array
+   * @param initializationVector the raw initialization vector
+   * @param keyVersion           the vault version of the encryption key entry
+   */
   public AesEncryptedPayload(byte[] encryptedPayload, byte[] initializationVector, int keyVersion) {
     this(encryptedPayload, initializationVector, keyVersion, null);
   }
 
+  /**
+   * @param encryptedPayload           an encrypted payload as byte array
+   * @param initializationVector       the raw initialization vector
+   * @param keyVersion                 the vault version of the encryption key entry
+   * @param encryptionKeyAttributeName JSON property name of the key within Vault. Can be
+   *                                   <code>null</code> for Field-Level-Encryption.
+   */
   public AesEncryptedPayload(byte[] encryptedPayload, byte[] initializationVector, int keyVersion,
       String encryptionKeyAttributeName) {
     Objects.requireNonNull(encryptedPayload, "encryptedPayload must not be null");
@@ -32,11 +53,23 @@ public final class AesEncryptedPayload {
     this.encryptionKeyAttributeName = encryptionKeyAttributeName;
   }
 
+  /**
+   * @param encryptedPayload           an encrypted payload as byte array
+   * @param initializationVectorBase64 the initialization vector base64 encoded
+   * @param keyVersion                 the vault version of the encryption key entry
+   */
   public AesEncryptedPayload(byte[] encryptedPayload, String initializationVectorBase64,
       int keyVersion) {
     this(encryptedPayload, initializationVectorBase64, keyVersion, null);
   }
 
+  /**
+   * @param encryptedPayload           an encrypted payload as byte array
+   * @param initializationVectorBase64 the initialization vector base64 encoded
+   * @param keyVersion                 the vault version of the encryption key entry
+   * @param encryptionKeyAttributeName JSON property name of the key within Vault. Can be
+   *                                   <code>null</code> for Field-Level-Encryption.
+   */
   public AesEncryptedPayload(byte[] encryptedPayload, String initializationVectorBase64,
       int keyVersion, String encryptionKeyAttributeName) {
     Objects.requireNonNull(encryptedPayload, "encryptedPayload must not be null");
@@ -48,10 +81,20 @@ public final class AesEncryptedPayload {
     this.encryptionKeyAttributeName = encryptionKeyAttributeName;
   }
 
+  /**
+   * @param plainPayload the plain payload as byte array
+   * @return an AesEncryptedPayload of an unencrypted payload
+   */
   public static AesEncryptedPayload ofUnencryptedPayload(byte[] plainPayload) {
     return new AesEncryptedPayload(plainPayload);
   }
 
+  /**
+   * @param encryptedPayload     an encrypted payload as byte array
+   * @param initializationVector the raw initialization vector
+   * @param keyVersion           the vault data for the encryption key
+   * @return an AesEncryptedPayload of an encrypted payload
+   */
   public static AesEncryptedPayload ofEncryptedPayload(
       byte[] encryptedPayload,
       byte[] initializationVector,
@@ -61,6 +104,12 @@ public final class AesEncryptedPayload {
         keyVersion.encryptionKeyAttributeName());
   }
 
+  /**
+   * @param encryptedPayload           an encrypted payload as byte array
+   * @param initializationVectorBase64 the initialization vector base64 encoded
+   * @param keyVersion                 the vault metadata for the encryption key
+   * @return an AesEncryptedPayload of an encrypted payload
+   */
   public static AesEncryptedPayload ofEncryptedPayload(
       byte[] encryptedPayload,
       String initializationVectorBase64,
@@ -68,6 +117,14 @@ public final class AesEncryptedPayload {
     return new AesEncryptedPayload(encryptedPayload, initializationVectorBase64, keyVersion);
   }
 
+  /**
+   * @param encryptedPayload           an encrypted payload as byte array
+   * @param initializationVectorBase64 the initialization vector base64 encoded
+   * @param keyVersion                 the vault version of the encryption key entry
+   * @param encryptionKeyAttributeName JSON property name of the key within Vault. Can be
+   *                                   <code>null</code> for Field-Level-Encryption.
+   * @return an AesEncryptedPayload of an encrypted payload
+   */
   public static AesEncryptedPayload ofEncryptedPayload(
       byte[] encryptedPayload,
       String initializationVectorBase64,
@@ -77,6 +134,12 @@ public final class AesEncryptedPayload {
         encryptionKeyAttributeName);
   }
 
+  /**
+   * @param encryptedPayload     an encrypted payload as byte array
+   * @param initializationVector the raw initialization vector
+   * @param cipherSpec           the vault metadata for the encryption key
+   * @return an AesEncryptedPayload of an encrypted payload
+   */
   public static AesEncryptedPayload ofEncryptedPayload(
       byte[] encryptedPayload,
       byte[] initializationVector,
@@ -88,6 +151,12 @@ public final class AesEncryptedPayload {
         cipherSpec.keyVersion(), cipherSpec.cipherName());
   }
 
+  /**
+   * @param encryptedPayload           an encrypted payload as byte array
+   * @param initializationVectorBase64 the initialization vector base64 encoded
+   * @param cipherSpec                 the vault metadata for the encryption key
+   * @return an AesEncryptedPayload of an encrypted payload
+   */
   public static AesEncryptedPayload ofEncryptedPayload(byte[] encryptedPayload,
       String initializationVectorBase64, EncryptionCipherSpec cipherSpec) {
     if (cipherSpec == null) {
@@ -97,20 +166,37 @@ public final class AesEncryptedPayload {
         cipherSpec.keyVersion(), cipherSpec.cipherName());
   }
 
+  /**
+   * @return <code>true</code> when this object holds an encrypted value. <code>false</code> when
+   * this object hold an unencrypted value.
+   */
   public boolean isEncrypted() {
     return initializationVector != null
         && initializationVector.length > 0
         && keyVersion > 0;
   }
 
+  /**
+   * @return the value - which might is encrypted
+   * @see #isEncrypted()
+   */
   public byte[] encryptedPayload() {
     return encryptedPayload;
   }
 
+  /**
+   * @return the raw initialization vector or <code>null</code> when the value is encrypted
+   * @see #isEncrypted()
+   */
   public byte[] initializationVector() {
     return initializationVector;
   }
 
+  /**
+   * @return the initialization vector base64 encoded or <code>null</code> when the value is
+   * encrypted
+   * @see #isEncrypted()
+   */
   public String initializationVectorBase64() {
     if (initializationVector == null) {
       return null;
@@ -118,6 +204,9 @@ public final class AesEncryptedPayload {
     return Base64.getEncoder().encodeToString(initializationVector);
   }
 
+  /**
+   * @return the vault version of the encryption key entry
+   */
   public int keyVersion() {
     return keyVersion;
   }

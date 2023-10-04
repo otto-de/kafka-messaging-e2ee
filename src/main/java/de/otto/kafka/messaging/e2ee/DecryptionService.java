@@ -9,6 +9,11 @@ import java.security.Key;
 import java.util.Objects;
 import javax.crypto.spec.SecretKeySpec;
 
+/**
+ * This class do decrypt a message or payload.
+ *
+ * @see EncryptionService
+ */
 public final class DecryptionService {
 
   private final EncryptionKeyProvider encryptionKeyProvider;

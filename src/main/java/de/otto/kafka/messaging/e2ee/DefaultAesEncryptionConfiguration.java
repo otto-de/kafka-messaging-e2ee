@@ -8,6 +8,9 @@ import javax.crypto.spec.GCMParameterSpec;
 
 interface DefaultAesEncryptionConfiguration {
 
+  /**
+   * the cipher to use
+   */
   String CIPHER_TYPE = "AES/GCM/NoPadding";
   /**
    * length of the AES initialization vector in bytes
@@ -23,6 +26,12 @@ interface DefaultAesEncryptionConfiguration {
    */
   Duration CACHING_DURATION = Duration.ofMinutes(60);
 
+  /**
+   * @param plainValue an unencrypted value
+   * @param aesKey     an AES key
+   * @param iv         an initialization vector
+   * @return the encrypted value
+   */
   static byte[] encrypt(byte[] plainValue, Key aesKey, byte[] iv) {
     try {
       var cipher = Cipher.getInstance(CIPHER_TYPE);
@@ -33,6 +42,12 @@ interface DefaultAesEncryptionConfiguration {
     }
   }
 
+  /**
+   * @param encryptedValue the encrypted value
+   * @param aesKey         the AES key used to encrypt the value
+   * @param iv             the initialization vector used to encrypt the value
+   * @return the unencrypted value
+   */
   static byte[] decrypt(byte[] encryptedValue, Key aesKey, byte[] iv) {
     try {
       var cipher = Cipher.getInstance(CIPHER_TYPE);

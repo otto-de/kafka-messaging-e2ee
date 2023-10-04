@@ -2,6 +2,9 @@ package de.otto.kafka.messaging.e2ee;
 
 import java.util.Objects;
 
+/**
+ * This is the central interface for the vault access.
+ */
 public interface EncryptionKeyProvider {
 
   /**
@@ -35,6 +38,14 @@ public interface EncryptionKeyProvider {
     private final String encryptionKeyAttributeName;
     private final String encodedKey;
 
+    /**
+     * Creates a key version object without the encryptionKeyAttributeName. This is used for
+     * Field-Level-Encryption.
+     *
+     * @param version    the version of the Vault entry
+     * @param encodedKey the value of the key within Vault. The format is base64 with probably some
+     *                   CR and/or LF characters at the end.
+     */
     public KeyVersion(int version, String encodedKey) {
       Objects.requireNonNull(encodedKey);
       this.version = version;
@@ -42,6 +53,12 @@ public interface EncryptionKeyProvider {
       this.encodedKey = encodedKey;
     }
 
+    /**
+     * @param version                    the version of the Vault entry
+     * @param encryptionKeyAttributeName JSON property name of the key within Vault.
+     * @param encodedKey                 the value of the key within Vault. The format is base64
+     *                                   with probably some CR and/or LF characters at the end.
+     */
     public KeyVersion(int version, String encryptionKeyAttributeName, String encodedKey) {
       Objects.requireNonNull(encodedKey);
       this.version = version;
@@ -49,14 +66,25 @@ public interface EncryptionKeyProvider {
       this.encodedKey = encodedKey;
     }
 
+    /**
+     * @return the version of the Vault entry
+     */
     public int version() {
       return version;
     }
 
+    /**
+     * @return JSON property name of the key within Vault. It can be <code>null</code> for
+     * Field-Level-Encryption.
+     */
     public String encryptionKeyAttributeName() {
       return encryptionKeyAttributeName;
     }
 
+    /**
+     * @return the value of the key within Vault. The format is base64 with probably some CR and/or
+     * LF characters at the end.
+     */
     public String encodedKey() {
       return encodedKey;
     }

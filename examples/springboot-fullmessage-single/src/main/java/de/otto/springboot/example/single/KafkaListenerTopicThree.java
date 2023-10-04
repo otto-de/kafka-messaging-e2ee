@@ -1,5 +1,8 @@
 package de.otto.springboot.example.single;
 
+import static de.otto.kafka.messaging.e2ee.KafkaEncryptionHelper.KAFKA_CE_HEADER_CIPHER_NAME_VALUE;
+import static de.otto.kafka.messaging.e2ee.KafkaEncryptionHelper.KAFKA_CE_HEADER_CIPHER_VERSION_VALUE;
+import static de.otto.kafka.messaging.e2ee.KafkaEncryptionHelper.KAFKA_CE_HEADER_IV_VALUE;
 import static de.otto.kafka.messaging.e2ee.KafkaEncryptionHelper.KAFKA_HEADER_CIPHER_VALUE;
 import static de.otto.kafka.messaging.e2ee.KafkaEncryptionHelper.KAFKA_HEADER_IV_VALUE;
 
@@ -29,10 +32,13 @@ public class KafkaListenerTopicThree {
       @Payload(required = false) byte[] payload,
       @Header(name = "kafka_receivedTopic") String kafkaTopicName,
       @Header(required = false, name = KAFKA_HEADER_IV_VALUE) byte[] ivRaw,
-      @Header(required = false, name = KAFKA_HEADER_CIPHER_VALUE) byte[] cipherConfigRaw) {
+      @Header(required = false, name = KAFKA_HEADER_CIPHER_VALUE) byte[] cipherConfigRaw,
+      @Header(required = false, name = KAFKA_CE_HEADER_IV_VALUE) byte[] ceIvRaw,
+      @Header(required = false, name = KAFKA_CE_HEADER_CIPHER_VERSION_VALUE) byte[] cipherVersionRaw,
+      @Header(required = false, name = KAFKA_CE_HEADER_CIPHER_NAME_VALUE) byte[] cipherNameRaw) {
 
     // decrypt incoming event
-    String plainEvent = decryptPayload(payload, kafkaTopicName, ivRaw, cipherConfigRaw);
+    String plainEvent = decryptPayload(payload, kafkaTopicName, ivRaw, cipherConfigRaw, ceIvRaw, cipherVersionRaw, cipherNameRaw);
 
     String messageWasEncryptedTxt;
     if (ivRaw != null && cipherConfigRaw != null) {
@@ -44,9 +50,9 @@ public class KafkaListenerTopicThree {
   }
 
   private String decryptPayload(byte[] payload, String kafkaTopicName, byte[] ivRaw,
-      byte[] cipherConfigRaw) {
+      byte[] cipherConfigRaw, byte[] ceIvRaw, byte[] cipherVersionRaw, byte[] cipherNameRaw) {
     AesEncryptedPayload encryptedPayload = KafkaEncryptionHelper.aesEncryptedPayloadOfKafka(payload,
-        ivRaw, cipherConfigRaw);
+        ivRaw, cipherConfigRaw, ceIvRaw, cipherVersionRaw, cipherNameRaw);
     return decryptionService.decryptToString(kafkaTopicName, encryptedPayload);
   }
 }
