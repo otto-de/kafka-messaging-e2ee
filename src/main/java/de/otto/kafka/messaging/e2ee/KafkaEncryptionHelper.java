@@ -102,7 +102,7 @@ public interface KafkaEncryptionHelper {
       // prefer new cloud event kafka headers for decryption
       int cipherVersion = extractCipherVersion(kafkaCeHeaderCipherVersion);
       return AesEncryptedPayload.ofEncryptedPayload(encryptedPayload,
-          kafkaHeaderInitializationVector, cipherVersion, kafkaCeHeaderCipherName);
+          kafkaCeHeaderInitializationVector, cipherVersion, kafkaCeHeaderCipherName);
     }
 
     if (kafkaHeaderInitializationVector != null

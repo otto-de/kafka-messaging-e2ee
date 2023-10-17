@@ -83,7 +83,7 @@ class KafkaEncryptionHelperTest {
   }
 
   @Test
-  void shouldWriteAndReaCipherSpec() {
+  void shouldWriteAndReadCipherSpec() {
     // given: a Cipher Spec
     EncryptionCipherSpec encryptionCipherSpec = EncryptionCipherSpec.builder()
         .keyVersion(43)
@@ -152,7 +152,7 @@ class KafkaEncryptionHelperTest {
   }
 
   @Test
-  void shouldWriteAndReadCloudEventAesEncryptionPayload() {
+  void shouldWriteAndReadCloudEventAesEncryptionPayload_SpecOneOnly() {
     // given: a valid AesEncryptedPayload (with default cipher name)
     AesEncryptedPayload aesEncryptedPayload = AesEncryptedPayload.ofEncryptedPayload(ENCRYPTED,
         IV_TEXT, 43);
@@ -160,6 +160,57 @@ class KafkaEncryptionHelperTest {
     byte[] encryptedBytes = aesEncryptedPayload.encryptedPayload();
     byte[] ivHeaderValue = KafkaEncryptionHelper.mapToIvHeaderValue(aesEncryptedPayload);
     byte[] ciphersHeaderValue = KafkaEncryptionHelper.mapToCipherHeaderValue(aesEncryptedPayload);
+    byte[] kafkaCeHeaderInitializationVector = null;
+    byte[] kafkaCeHeaderCipherVersion = null;
+    byte[] kafkaCeHeaderCipherName = null;
+
+    // when: converted back to AesEncryptedPayload
+    AesEncryptedPayload result = KafkaEncryptionHelper.aesEncryptedPayloadOfKafka(
+        encryptedBytes, ivHeaderValue, ciphersHeaderValue,
+        kafkaCeHeaderInitializationVector, kafkaCeHeaderCipherVersion, kafkaCeHeaderCipherName);
+    // then: result should be as expected
+    assertThat(result.isEncrypted()).isTrue();
+    assertThat(result.encryptedPayload()).isEqualTo(ENCRYPTED);
+    assertThat(result.initializationVectorBase64()).isEqualTo(IV_TEXT);
+    assertThat(result.keyVersion()).isEqualTo(43);
+  }
+
+  @Test
+  void shouldWriteAndReadCloudEventAesEncryptionPayload_SpecOneAndSpecTwo() {
+    // given: a valid AesEncryptedPayload (with default cipher name)
+    AesEncryptedPayload aesEncryptedPayload = AesEncryptedPayload.ofEncryptedPayload(ENCRYPTED,
+        IV_TEXT, 43);
+    // when: headers are created
+    byte[] encryptedBytes = aesEncryptedPayload.encryptedPayload();
+    byte[] ivHeaderValue = KafkaEncryptionHelper.mapToIvHeaderValue(aesEncryptedPayload);
+    byte[] ciphersHeaderValue = KafkaEncryptionHelper.mapToCipherHeaderValue(aesEncryptedPayload);
+    byte[] kafkaCeHeaderInitializationVector = KafkaEncryptionHelper.mapToIvHeaderValue(
+        aesEncryptedPayload);
+    byte[] kafkaCeHeaderCipherVersion = KafkaEncryptionHelper.mapToCipherVersionHeaderValue(
+        aesEncryptedPayload);
+    byte[] kafkaCeHeaderCipherName = KafkaEncryptionHelper.mapToCipherNameHeaderValue(
+        aesEncryptedPayload);
+
+    // when: converted back to AesEncryptedPayload
+    AesEncryptedPayload result = KafkaEncryptionHelper.aesEncryptedPayloadOfKafka(
+        encryptedBytes, ivHeaderValue, ciphersHeaderValue,
+        kafkaCeHeaderInitializationVector, kafkaCeHeaderCipherVersion, kafkaCeHeaderCipherName);
+    // then: result should be as expected
+    assertThat(result.isEncrypted()).isTrue();
+    assertThat(result.encryptedPayload()).isEqualTo(ENCRYPTED);
+    assertThat(result.initializationVectorBase64()).isEqualTo(IV_TEXT);
+    assertThat(result.keyVersion()).isEqualTo(43);
+  }
+
+  @Test
+  void shouldWriteAndReadCloudEventAesEncryptionPayload_SpecTwoOnly() {
+    // given: a valid AesEncryptedPayload (with default cipher name)
+    AesEncryptedPayload aesEncryptedPayload = AesEncryptedPayload.ofEncryptedPayload(ENCRYPTED,
+        IV_TEXT, 43);
+    // when: headers are created
+    byte[] encryptedBytes = aesEncryptedPayload.encryptedPayload();
+    byte[] ivHeaderValue = null;
+    byte[] ciphersHeaderValue = null;
     byte[] kafkaCeHeaderInitializationVector = KafkaEncryptionHelper.mapToIvHeaderValue(
         aesEncryptedPayload);
     byte[] kafkaCeHeaderCipherVersion = KafkaEncryptionHelper.mapToCipherVersionHeaderValue(
