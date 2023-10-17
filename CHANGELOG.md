@@ -1,3 +1,10 @@
+## [2.1.1](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.1.0...v2.1.1) (2023-10-17)
+
+
+### Bug Fixes
+
+* **specUpdate:** bug fix in KafkaEncryptionHelper#aesEncryptedPayloadOfKafka - it used the wrong IV variable ([94c6378](https://github.com/otto-de/kafka-messaging-e2ee/commit/94c63786643d9e187e2d8d7c26657f62623cf8e7))
+
 # [2.1.0](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.0.1...v2.1.0) (2023-10-04)
 
 
