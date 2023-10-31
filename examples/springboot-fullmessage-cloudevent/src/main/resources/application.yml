@@ -7,13 +7,13 @@ app:
   topic:
     one:
       name: "teamOneTopicOne"
+      encrypted: true
+      vaultPath: "galapagos/local/galapagos_teamOne/teamOneTopicOne"
+      encryptionKeyAttributeName: "encryption_key"
     two:
       name: "teamTwoTopicTwo"
     three:
       name: "teamOneTopicThree"
-      encrypted: true
-      vaultPath: "galapagos/local/galapagos_teamOne/teamOneTopicThree"
-      encryptionKeyAttributeName: "encryption_key"
 
 hashicorp:
   address: http://localhost:8200/
@@ -29,14 +29,14 @@ spring:
     bootstrap-servers: "localhost:9097"
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: io.cloudevents.kafka.CloudEventSerializer
+      value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
       properties:
         acks: all
     consumer:
       group-id: "springboot-fullmessage-single"
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: io.cloudevents.kafka.CloudEventDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
       properties:
         allow.auto.create.topics: false
     listener:
