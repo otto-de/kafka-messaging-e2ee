@@ -1,3 +1,10 @@
+## [2.1.2](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.1.1...v2.1.2) (2023-11-03)
+
+
+### Bug Fixes
+
+* **specUpdate:** update "ce_" header names to comply with the CloudEvent specification. ([efdc140](https://github.com/otto-de/kafka-messaging-e2ee/commit/efdc140bb63646772e294682f6e824fae947e95f))
+
 ## [2.1.1](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.1.0...v2.1.1) (2023-10-17)
 
 
