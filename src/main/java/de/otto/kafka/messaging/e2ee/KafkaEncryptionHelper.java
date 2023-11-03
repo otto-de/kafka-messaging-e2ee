@@ -23,7 +23,7 @@ public interface KafkaEncryptionHelper {
   /**
    * Name of Kafka CloudEvent Header for the initialization vector for the payload (or value)
    */
-  String KAFKA_CE_HEADER_IV_VALUE = "ce_encryption.ref.iv";
+  String KAFKA_CE_HEADER_IV_VALUE = "ce_e2eeiv";
 
   /**
    * Name of Kafka Header for the cipher metadata for the partition key
@@ -36,11 +36,11 @@ public interface KafkaEncryptionHelper {
   /**
    * Name of Kafka CloudEvent Header for the cipher version for the payload (or value)
    */
-  String KAFKA_CE_HEADER_CIPHER_VERSION_VALUE = "ce_encryption.ref.cipher.version";
+  String KAFKA_CE_HEADER_CIPHER_VERSION_VALUE = "ce_e2eekeyversion";
   /**
    * Name of Kafka CloudEvent Header for the cipher name for the payload (or value)
    */
-  String KAFKA_CE_HEADER_CIPHER_NAME_VALUE = "ce_encryption.ref.cipher.name";
+  String KAFKA_CE_HEADER_CIPHER_NAME_VALUE = "ce_e2eekeyname";
 
   static String headerNameIv(boolean isForKey) {
     if (isForKey) {

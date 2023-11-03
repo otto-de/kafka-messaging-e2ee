@@ -265,8 +265,8 @@ class KafkaEncryptionHelperTest {
     // then: all expected kafka headers should have been set
     assertThat(kafkaHeaders.keySet())
         .containsExactlyInAnyOrder("encryption/iv", "encryption/ciphers",
-            "ce_encryption.ref.iv", "ce_encryption.ref.cipher.version",
-            "ce_encryption.ref.cipher.name");
+            "ce_e2eeiv", "ce_e2eekeyversion",
+            "ce_e2eekeyname");
   }
 
   @Test
