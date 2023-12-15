@@ -27,7 +27,7 @@ jobs:
           java-version: '17'
       - name: Run Unit Tests
         run: ./gradlew clean test
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: test-results
