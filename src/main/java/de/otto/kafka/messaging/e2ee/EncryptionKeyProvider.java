@@ -30,6 +30,15 @@ public interface EncryptionKeyProvider {
   String retrieveKeyForDecryption(String topic, int version, String encryptionKeyAttributeName);
 
   /**
+   * @param kafkaTopicName the name of the topic
+   * @return <code>true</code> when the topic can contain encrypted payloads
+   */
+  default boolean isEncryptedTopic(String kafkaTopicName) {
+    throw new UnsupportedOperationException(
+        "This method is not implemented by " + getClass().getName());
+  }
+
+  /**
    * base64 and URL-Encoded encoded AES key
    */
   final class KeyVersion {

@@ -43,4 +43,9 @@ public class DummyEncryptionKeyProvider implements EncryptionKeyProvider {
   public String retrieveKeyForDecryption(String topic, int version) {
     return keyVersion.encodedKey();
   }
+
+  @Override
+  public boolean isEncryptedTopic(String kafkaTopicName) {
+    return true;
+  }
 }

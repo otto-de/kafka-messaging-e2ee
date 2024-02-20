@@ -63,6 +63,21 @@ public final class DecryptionService {
     return new String(decryptToByteArray(kafkaTopicName, encryptedPayload), StandardCharsets.UTF_8);
   }
 
+  /**
+   * This method checks if the encryption "flag" of the kafka topic matches the payload. This method
+   * can be used by a kafka topic consumer the control the kafka producer.
+   *
+   * @param kafkaTopicName   name of the Kafka Topic the payload is from.
+   * @param encryptedPayload the (potentially) encrypted payload.
+   * @return <code>true</code> when the topic is marked as encrypted and the payload is encrypted or
+   * when the topic is not encrypted as well as the payload.
+   */
+  public boolean hasSameEncryptionFlag(String kafkaTopicName,
+      AesEncryptedPayload encryptedPayload) {
+    return encryptionKeyProvider.isEncryptedTopic(kafkaTopicName) == encryptedPayload.isEncrypted();
+  }
+
+
   private Key createAesKey(TopicKeyVersion topicKeyVersion) {
     String topic = topicKeyVersion.topic();
     int keyVersionNumber = topicKeyVersion.keyVersionNumber();

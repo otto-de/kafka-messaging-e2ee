@@ -30,7 +30,7 @@ public final class VaultEncryptionKeyProvider implements EncryptionKeyProvider {
 
   @Override
   public KeyVersion retrieveKeyForEncryption(String kafkaTopicName) {
-    if (!config.isEncryptedTopic(kafkaTopicName)) {
+    if (!isEncryptedTopic(kafkaTopicName)) {
       return null;
     }
 
@@ -84,6 +84,11 @@ public final class VaultEncryptionKeyProvider implements EncryptionKeyProvider {
     String usedEncryptionKeyAttributeName = Objects.requireNonNullElse(encryptionKeyAttributeName,
         DEFAULT_ENCRYPTION_KEY_ATTRIBUTE_NAME);
     return extractEncryptionKeyFromResponse(response, usedEncryptionKeyAttributeName);
+  }
+
+  @Override
+  public boolean isEncryptedTopic(String kafkaTopicName) {
+    return config.isEncryptedTopic(kafkaTopicName);
   }
 
   private void validateResponse(LogicalResponse response, Supplier<String> errorMsgSupplier) {

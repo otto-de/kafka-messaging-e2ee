@@ -82,4 +82,38 @@ class DecryptionServiceTest {
     String result = decryptionService.decryptToString("someTopic", encryptedPayload);
     assertThat(result).isEqualTo("Hello World!");
   }
+
+  @Test
+  void testHasSameEncryptionFlag_true() {
+    EncryptionKeyProvider keyProvider = new DummyEncryptionKeyProvider(
+        "gZvWT1IN0mM5sK3sK0V2Wfzo9Jmk4tUPt7gxRsuN3LY=", "encryption_key", 3);
+    DecryptionService decryptionService = new DecryptionService(keyProvider);
+
+    int keyVersion = 3;
+    String encryptionKeyAttributeName = "encryption_key";
+    String ivBase64 = "2rW2tDnRdwRg87Ta";
+    byte[] encryptedPayloadByteArray = Base64.getDecoder()
+        .decode("6ttHpHYw7eYQ1OnvrhZAFi0PPsUGl9NR18hXFQ==");
+
+    AesEncryptedPayload encryptedPayload = AesEncryptedPayload.ofEncryptedPayload(
+        encryptedPayloadByteArray, ivBase64, keyVersion, encryptionKeyAttributeName);
+
+    assertThat(decryptionService.hasSameEncryptionFlag("sometopic", encryptedPayload))
+        .isTrue();
+  }
+
+  @Test
+  void testHasSameEncryptionFlag_false() {
+    EncryptionKeyProvider keyProvider = new DummyEncryptionKeyProvider(
+        "gZvWT1IN0mM5sK3sK0V2Wfzo9Jmk4tUPt7gxRsuN3LY=", "encryption_key", 3);
+    DecryptionService decryptionService = new DecryptionService(keyProvider);
+
+    byte[] plaintextByteArray = "Hello World!".getBytes(StandardCharsets.UTF_8);
+
+    AesEncryptedPayload unencryptedPayload = AesEncryptedPayload.ofUnencryptedPayload(
+        plaintextByteArray);
+
+    assertThat(decryptionService.hasSameEncryptionFlag("sometopic", unencryptedPayload))
+        .isFalse();
+  }
 }

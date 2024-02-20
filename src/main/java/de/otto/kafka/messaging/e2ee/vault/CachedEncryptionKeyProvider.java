@@ -265,6 +265,11 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
     }
   }
 
+  @Override
+  public boolean isEncryptedTopic(String kafkaTopicName) {
+    return realEncryptionKeyProvider.isEncryptedTopic(kafkaTopicName);
+  }
+
   private String retrieveNewExpiredAtTimestamp() {
     return OffsetDateTime.now(clock)
         .withOffsetSameInstant(ZoneOffset.UTC)
