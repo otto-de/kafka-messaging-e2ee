@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.1.2...v2.2.0) (2024-02-20)
+
+
+### Features
+
+* **encryptionCheck:** introduce new method DecryptionService#hasSameEncryptionFlag(..) so kafka consumers can validate the kafka message producer ([39e05c2](https://github.com/otto-de/kafka-messaging-e2ee/commit/39e05c21e99740177f2cdcaa6689c85a3ff93861))
+
 ## [2.1.2](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.1.1...v2.1.2) (2023-11-03)
 
 
