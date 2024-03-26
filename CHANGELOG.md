@@ -1,3 +1,11 @@
+## [2.2.4](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.2.3...v2.2.4) (2024-03-26)
+
+
+### Bug Fixes
+
+* **deps:** bump io.github.gradle-nexus.publish-plugin ([#12](https://github.com/otto-de/kafka-messaging-e2ee/issues/12)) ([8953578](https://github.com/otto-de/kafka-messaging-e2ee/commit/8953578a10ec0e231c5feb93bda8a47b537155ef))
+* **deps:** bump org.assertj:assertj-core from 3.25.1 to 3.25.3 ([#13](https://github.com/otto-de/kafka-messaging-e2ee/issues/13)) ([6f38bf5](https://github.com/otto-de/kafka-messaging-e2ee/commit/6f38bf56c8f977c6cdb36ba09c5bdf73aacf885d))
+
 ## [2.2.3](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.2.2...v2.2.3) (2024-03-26)
 
 
