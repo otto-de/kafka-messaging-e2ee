@@ -1,3 +1,12 @@
+## [2.2.1](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.2.0...v2.2.1) (2024-03-26)
+
+
+### Bug Fixes
+
+* **deps:** bump actions/setup-java from 3 to 4 ([#3](https://github.com/otto-de/kafka-messaging-e2ee/issues/3)) ([b97ef42](https://github.com/otto-de/kafka-messaging-e2ee/commit/b97ef421bef409c11cc3a008c1a1426c07c1db31))
+* **deps:** bump actions/upload-artifact from 3 to 4 ([#4](https://github.com/otto-de/kafka-messaging-e2ee/issues/4)) ([49dcdf8](https://github.com/otto-de/kafka-messaging-e2ee/commit/49dcdf8864e79459c23f12aaa67fd5c9e4764414))
+* **deps:** bump org.assertj:assertj-core from 3.24.2 to 3.25.1 ([#7](https://github.com/otto-de/kafka-messaging-e2ee/issues/7)) ([780f52b](https://github.com/otto-de/kafka-messaging-e2ee/commit/780f52b8b00552f69cbe72f86507bffae27e21a4))
+
 # [2.2.0](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.1.2...v2.2.0) (2024-02-20)
 
 
