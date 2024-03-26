@@ -10,7 +10,7 @@ plugins {
 }
 
 ext {
-    jopenlibsVaultVersion = '6.1.0'
+    jopenlibsVaultVersion = '6.2.0'
     slf4jVersion = '2.0.9'
     junitVersion = '5.10.2'
     assertJVersion = '3.25.1'
