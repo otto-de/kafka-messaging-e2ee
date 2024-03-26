@@ -1,3 +1,11 @@
+## [2.2.2](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.2.1...v2.2.2) (2024-03-26)
+
+
+### Bug Fixes
+
+* **deps:** bump io.github.jopenlibs:vault-java-driver ([#1](https://github.com/otto-de/kafka-messaging-e2ee/issues/1)) ([55839ec](https://github.com/otto-de/kafka-messaging-e2ee/commit/55839ec3c4fb9aadcfb6742fed888acd38f5c858))
+* **deps:** bump org.junit.jupiter:junit-jupiter from 5.10.0 to 5.10.2 ([#11](https://github.com/otto-de/kafka-messaging-e2ee/issues/11)) ([4d419e2](https://github.com/otto-de/kafka-messaging-e2ee/commit/4d419e27d5475f4415e8f313bb0694c31b0903df))
+
 ## [2.2.1](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.2.0...v2.2.1) (2024-03-26)
 
 
