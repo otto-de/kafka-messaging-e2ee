@@ -55,7 +55,7 @@ jobs:
           git config --global credential.helper store
           echo "https://${PERSONAL_ACCESS_TOKEN}:@github.com" > ~/.git-credentials
       - name: Semantic Release
-        uses: cycjimmy/semantic-release-action@v4.0.0
+        uses: cycjimmy/semantic-release-action@v4.1.0
         id: semantic # Need an id for output parameters
         with:
           semantic_version: 19.0.2
