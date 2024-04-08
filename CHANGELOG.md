@@ -1,3 +1,10 @@
+## [2.2.5](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.2.4...v2.2.5) (2024-04-08)
+
+
+### Bug Fixes
+
+* **version:** [CORMORANT-1629] update to gradle 8.7 ([983b54f](https://github.com/otto-de/kafka-messaging-e2ee/commit/983b54f11d332deca9e39f1ca5ea4a3ec743c8a4))
+
 ## [2.2.4](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.2.3...v2.2.4) (2024-03-26)
 
 
