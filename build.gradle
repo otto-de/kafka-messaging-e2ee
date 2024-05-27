@@ -13,7 +13,7 @@ ext {
     jopenlibsVaultVersion = '6.2.0'
     slf4jVersion = '2.0.12'
     junitVersion = '5.10.2'
-    assertJVersion = '3.25.3'
+    assertJVersion = '3.26.0'
 }
 
 repositories {
