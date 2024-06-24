@@ -18,7 +18,7 @@ subject of rotation and each encrypted message carries the version number of the
 
 ## Features
 
-* compatible with the [internal otto kafka end-to-end encryption specification](https://og2.me/PDT4br)
+* compatible with the [internal otto kafka end-to-end encryption specification](https://og2.me/Ckoh1n)
 * encryption can be unit tested
 * supports multiple encrypted and/or unencrypted kafka topics with one single serializer and/or deserializer configuration
 * refreshes the vault authentication token when using app-role authentication
