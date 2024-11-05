@@ -22,7 +22,7 @@ jobs:
           name: test-results
           path: '**/build/reports/tests'
       - name: Publish Test Report
-        uses: mikepenz/action-junit-report@v4
+        uses: mikepenz/action-junit-report@v5
         if: failure() # always run even if the previous step fails
         with:
           report_paths: '**/build/test-results/**/TEST-*.xml'
