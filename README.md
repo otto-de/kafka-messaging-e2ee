@@ -49,7 +49,7 @@ subject of rotation and each encrypted message carries the version number of the
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/otto-de/_projectname_/tags).
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/otto-de/kafka-messaging-e2ee/tags).
 
 ### Commit style
 
@@ -67,7 +67,7 @@ refactor(<something>): <add refactoring commit message (will not create a new ta
 
 ## Authors
 
-See also the list of [contributors](CONTRIBUTORS) who participated in this project.
+See also the list of [contributors](CONTRIBUTORS.md) who participated in this project.
 
 ## License
 
