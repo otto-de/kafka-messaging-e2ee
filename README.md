@@ -3,7 +3,7 @@
 ## Status
 [![Library](https://github.com/otto-de/kafka-messaging-e2ee/actions/workflows/application.yml/badge.svg)](https://github.com/otto-de/kafka-messaging-e2ee/actions/workflows/application.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/de.otto/kafka-messaging-e2ee?label=maven-central)](https://central.sonatype.com/artifact/de.otto/kafka-messaging-e2ee)
-
+![OSS Lifecycle](https://img.shields.io/osslifecycle?file_url=https%3A%2F%2Fraw.githubusercontent.com%2Fotto-de%2Fkafka-messaging-e2ee%2Fmain%2FOSSMETADATA)
 
 ## About
 
@@ -47,7 +47,11 @@ subject of rotation and each encrypted message carries the version number of the
 * The [SLF4J API](http://www.slf4j.org) is licensed under the [MIT License](http://www.slf4j.org/license.html).
 
 
-## Commit style
+## Versioning
+
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/otto-de/_projectname_/tags).
+
+### Commit style
 
 We are using the [semantic release plugin](https://github.com/marketplace/actions/action-for-semantic-release) that automatically create tags based on the commit message.
 Therefor you should follow the [Angular Commit Message Conventions](https://github.com/angular/angular/blob/main/CONTRIBUTING.md#-commit-message-format)
@@ -61,7 +65,10 @@ docs(<something>): <add documentation commit message (will not create a new tag)
 refactor(<something>): <add refactoring commit message (will not create a new tag)>
 ```
 
+## Authors
 
-## Contact
+See also the list of [contributors](CONTRIBUTORS) who participated in this project.
 
-If you have questions or proposals, please open an issue or write an email to andre DOT kaplick AT otto.de
+## License
+
+This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details
