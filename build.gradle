@@ -38,6 +38,7 @@ dependencies {
 
     // test dependencies
     testImplementation "org.junit.jupiter:junit-jupiter:${junitVersion}"
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation "org.assertj:assertj-core:${assertJVersion}"
     testImplementation "org.slf4j:slf4j-simple:${slf4jVersion}"
 }
