@@ -1,3 +1,10 @@
+## [2.2.7](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.2.6...v2.2.7) (2025-02-26)
+
+
+### Bug Fixes
+
+* **deps:** bump slf4jVersion from 2.0.16 to 2.0.17 ([#35](https://github.com/otto-de/kafka-messaging-e2ee/issues/35)) ([677bce0](https://github.com/otto-de/kafka-messaging-e2ee/commit/677bce073f41f12d444c42581ce0ec45d31e75d9))
+
 ## [2.2.6](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.2.5...v2.2.6) (2024-05-27)
 
 
