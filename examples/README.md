@@ -31,6 +31,9 @@ cd /repos/kafka-messaging-e2ee/examples
 ## start the "springboot-fullmessage-multiple" example
 ./gradlew clean :springboot-fullmessage-multiple:bootRun
 
+## start the "springboot-fullmessage-single" example
+./gradlew clean :springboot-fullmessage-single:bootRun
+
 ## or start the "springboot-fieldlevel-multiple" example
 ./gradlew clean :springboot-fieldlevel-multiple:bootRun
 ```
