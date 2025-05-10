@@ -15,8 +15,8 @@ check_configuration() {
         exit 1
     fi
 
-    check_configured "sonatypeUsername" "This is the username you use to authenticate with sonatype nexus (e.g. otto-de)"
-    check_configured "sonatypePassword" "This is the password you use to authenticate with sonatype nexus (ask Guido or one of the developers)"
+    #check_configured "sonatypeUsername" "This is the username you use to authenticate with sonatype nexus (e.g. otto-de)"
+    #check_configured "sonatypePassword" "This is the password you use to authenticate with sonatype nexus (ask Guido or one of the developers)"
     check_configured "signing.secretKeyRingFile" "This is the gpg secret key file, e.g. ~/.gnupg/secring.gpg. If this doesn't exist, generate a key: gpg --gen-key"
     check_configured "signing.keyId" "This is the id of your key (e.g. 72FE5380). Use gpg --list-keys to find yours"
     check_configured "signing.password" "This is the password you defined for your gpg key"
@@ -33,10 +33,42 @@ set -e
 "${SCRIPT_DIR}"/gradlew clean check
 
 if [[ $SNAPSHOT == 1 ]]; then
-  echo "Publishing, closing and releasing into Sonatype OSS repository"
-  "${SCRIPT_DIR}"/gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
+  echo "Publishing, closing and releasing into Sonatype OSS Central Portal"
+  # "${SCRIPT_DIR}"/gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
+  echo "build artifacts"
+  # see: https://central.sonatype.org/publish/requirements/#a-complete-example-pom
+  "${SCRIPT_DIR}"/gradlew clean generateMetadataFileForMavenJavaPublication generatePomFileForMavenJavaPublication signMavenJavaPublication
+  echo "upload artifacts ..."
+  # see: https://central.sonatype.org/publish/publish-portal-api
+  curl --request POST \
+    --verbose \
+    --header "Authorization: Bearer $apiToken" \
+    --form bundle=@central-bundle.zip \
+    https://central.sonatype.com/api/v1/publisher/upload?publishingType=AUTOMATIC
+  echo "status ..."
+  curl --request POST \
+    --verbose \
+    --header "Authorization: Bearer $apiToken" \
+    "https://central.sonatype.com/api/v1/publisher/status?id=$deploymentId" \
+    | jq
 else
   echo "Publishing into Sonatype OSS repository"
-  "${SCRIPT_DIR}"/gradlew publishToSonatype
+  #"${SCRIPT_DIR}"/gradlew publishToSonatype
+  echo "build artifacts"
+  # see: https://central.sonatype.org/publish/requirements/#a-complete-example-pom
+  "${SCRIPT_DIR}"/gradlew clean generateMetadataFileForMavenJavaPublication generatePomFileForMavenJavaPublication signMavenJavaPublication
+  echo "upload artifacts ..."
+  # see: https://central.sonatype.org/publish/publish-portal-api
+  curl --request POST \
+      --verbose \
+      --header "Authorization: Bearer $apiToken" \
+      --form bundle=@central-bundle.zip \
+      https://central.sonatype.com/api/v1/publisher/upload?publishingType=USER_MANAGED
+  echo "status ..."
+  curl --request POST \
+      --verbose \
+      --header "Authorization: Bearer $apiToken" \
+      "https://central.sonatype.com/api/v1/publisher/status?id=$deploymentId" \
+      | jq
   echo "This is a snapshot release. Closing in sonatype is not necessary"
 fi
