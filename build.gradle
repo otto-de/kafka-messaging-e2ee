@@ -12,7 +12,7 @@ plugins {
 ext {
     jopenlibsVaultVersion = '6.2.0'
     slf4jVersion = '2.0.17'
-    junitVersion = '5.13.2'
+    junitVersion = '5.13.3'
     assertJVersion = '3.27.3'
 }
 
