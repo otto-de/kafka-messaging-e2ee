@@ -1,10 +1,12 @@
+import java.nio.file.Files
+
 plugins {
     // Apply the java-library plugin for API and implementation separation.
     id 'java-library'
     // Publish libs to e.g maven-central
     id 'maven-publish'
-//    // sign artefacts before publishing to maven-central
-//    id 'signing'
+    // sign artefacts before publishing to maven-central
+    id 'signing'
 //    // publishing to Nexus that automates creating, closing, and releasing staging repositories
 //    id "io.github.gradle-nexus.publish-plugin" version "2.0.0"
 }
@@ -96,7 +98,30 @@ publishing {
 //    }
 //}
 
-//signing {
-//////    required {  false }
-//    sign publishing.publications.mavenJava
-//}
+tasks.register('copyJarFiles', Copy) {
+    dependsOn tasks.generateMetadataFileForMavenJavaPublication
+
+    from 'build/libs'
+    into 'build/release'
+}
+
+tasks.register('copyPomFile', Copy) {
+    dependsOn tasks.generateMetadataFileForMavenJavaPublication
+    dependsOn tasks.generatePomFileForMavenJavaPublication
+
+    from 'build/publications/mavenJava/pom-default.xml', 'build/publications/mavenJava/pom-default.xml.asc'
+    rename("pom-default.xml", "pom.xml")
+    rename("pom-default.xml.asc", "pom.xml.asc")
+    into 'build/release'
+}
+
+tasks.register('prepareReleaseFiles') {
+    group = "Publishing"
+    description = "copies all files to 'build/release' folder"
+    dependsOn tasks.copyJarFiles
+    dependsOn tasks.copyPomFile
+}
+
+signing {
+    sign publishing.publications.mavenJava
+}
