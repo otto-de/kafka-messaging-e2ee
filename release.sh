@@ -30,7 +30,7 @@ grep 'version = .*-SNAPSHOT' "$SCRIPT_DIR/gradle.properties"
 SNAPSHOT=$?
 set -e
 
-"${SCRIPT_DIR}"/gradlew clean check
+"${SCRIPT_DIR}"/gradlew clean check generateMetadataFileForMavenJavaPublication generatePomFileForMavenJavaPublication
 
 if [[ $SNAPSHOT == 1 ]]; then
   echo "Publishing, closing and releasing into Sonatype OSS repository"

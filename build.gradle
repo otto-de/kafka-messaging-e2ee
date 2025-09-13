@@ -3,10 +3,10 @@ plugins {
     id 'java-library'
     // Publish libs to e.g maven-central
     id 'maven-publish'
-    // sign artefacts before publishing to maven-central
-    id 'signing'
-    // publishing to Nexus that automates creating, closing, and releasing staging repositories
-    id "io.github.gradle-nexus.publish-plugin" version "2.0.0"
+//    // sign artefacts before publishing to maven-central
+//    id 'signing'
+//    // publishing to Nexus that automates creating, closing, and releasing staging repositories
+//    id "io.github.gradle-nexus.publish-plugin" version "2.0.0"
 }
 
 ext {
@@ -89,14 +89,14 @@ publishing {
     }
 }
 
-nexusPublishing {
-    packageGroup = 'de.otto'
-    repositories {
-        sonatype()
-    }
-}
+//nexusPublishing {
+//    packageGroup = 'de.otto'
+//    repositories {
+//        sonatype()
+//    }
+//}
 
-signing {
-//    required {  false }
-    sign publishing.publications.mavenJava
-}
+//signing {
+//////    required {  false }
+//    sign publishing.publications.mavenJava
+//}
