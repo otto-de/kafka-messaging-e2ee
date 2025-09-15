@@ -42,6 +42,7 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
   private final SecondLevelCacheStorage cacheStorage;
   private final Clock clock;
   private final Duration cachingDuration;
+  private final int maxCacheSize;
 
   /**
    * @param realEncryptionKeyProvider the VaultEncryptionKeyProvider
@@ -53,7 +54,8 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
       EncryptionKeyProvider realEncryptionKeyProvider,
       SecondLevelCacheStorage cacheStorage,
       Duration cachingDuration) {
-    this(realEncryptionKeyProvider, cacheStorage, Clock.systemDefaultZone(), cachingDuration);
+    this(realEncryptionKeyProvider, cacheStorage, Clock.systemDefaultZone(), cachingDuration,
+        Integer.MAX_VALUE);
   }
 
   /**
@@ -68,6 +70,24 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
       SecondLevelCacheStorage cacheStorage,
       Clock clock,
       Duration cachingDuration) {
+    this(realEncryptionKeyProvider, cacheStorage, clock, cachingDuration, Integer.MAX_VALUE);
+  }
+
+  /**
+   * @param realEncryptionKeyProvider the VaultEncryptionKeyProvider
+   * @param cacheStorage              the 2nd-level cache storage
+   * @param cachingDuration           the cache duration for the encryption keys. The decryption
+   *                                  keys will never expire.
+   * @param clock                     a clock (used in unit tests)
+   * @param maxCacheSize              the maximum allowed size (number of characters) of the cache
+   *                                  storage - must be at least 500
+   */
+  CachedEncryptionKeyProvider(
+      EncryptionKeyProvider realEncryptionKeyProvider,
+      SecondLevelCacheStorage cacheStorage,
+      Clock clock,
+      Duration cachingDuration,
+      Integer maxCacheSize) {
     this.realEncryptionKeyProvider = Objects.requireNonNull(realEncryptionKeyProvider,
         "realEncryptionKeyProvider is required");
     this.cacheStorage = Objects.requireNonNull(cacheStorage,
@@ -76,6 +96,18 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
         "clock is required");
     this.cachingDuration = Objects.requireNonNull(cachingDuration,
         "cachingDuration is required");
+    this.maxCacheSize = Objects.requireNonNull(maxCacheSize,
+        "maxCacheSize is required");
+    if (this.maxCacheSize < 500) {
+      throw new IllegalArgumentException("maxCacheSize must be at least 500 characters");
+    }
+  }
+
+  /**
+   * @return a builder for that class
+   */
+  public static CachedEncryptionKeyProviderBuilder builder() {
+    return new CachedEncryptionKeyProviderBuilder();
   }
 
   @Override
@@ -144,25 +176,8 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
         cachedKeyEntry.set(NAME_EXPIRE_AT, Json.value(expiredAtTimestampString));
         keyVersion = cachedKeyVersion;
       }
+      updateCache(cacheEntries, null);
 
-      JsonArray jsonArrayEntries = new JsonArray();
-      for (JsonValue cacheEntry : cacheEntries) {
-        jsonArrayEntries.add(cacheEntry);
-      }
-
-      JsonObject jsonObjectRoot = new JsonObject();
-      jsonObjectRoot.add(NAME_ENTRIES, jsonArrayEntries);
-      String newCachePayload = jsonObjectRoot.toString(WriterConfig.MINIMAL);
-
-      try {
-        cacheStorage.storeEntry(newCachePayload);
-      } catch (Exception ex) {
-        if (log.isDebugEnabled()) {
-          log.debug(ex.getMessage(), ex);
-        } else {
-          log.warn("Failed to store 2nd-level cache value. Error: {}", ex.getMessage());
-        }
-      }
       return keyVersion;
     } finally {
       lock.unlock();
@@ -192,26 +207,7 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
       jsonObjectSingleKeyVersion.add(NAME_TOPIC, Json.value(topic));
       jsonObjectSingleKeyVersion.add(NAME_VERSION, Json.value(version));
       jsonObjectSingleKeyVersion.add(NAME_ENCODED_KEY, Json.value(encodedKey));
-      cacheEntries.add(jsonObjectSingleKeyVersion);
-
-      JsonArray jsonArrayEntries = new JsonArray();
-      for (JsonValue cacheEntry : cacheEntries) {
-        jsonArrayEntries.add(cacheEntry);
-      }
-
-      JsonObject jsonObjectRoot = new JsonObject();
-      jsonObjectRoot.add(NAME_ENTRIES, jsonArrayEntries);
-      String newCachePayload = jsonObjectRoot.toString(WriterConfig.MINIMAL);
-
-      try {
-        cacheStorage.storeEntry(newCachePayload);
-      } catch (Exception ex) {
-        if (log.isDebugEnabled()) {
-          log.debug(ex.getMessage(), ex);
-        } else {
-          log.warn("Failed to store 2nd-level cache value. Error: {}", ex.getMessage());
-        }
-      }
+      updateCache(cacheEntries, jsonObjectSingleKeyVersion);
 
       return encodedKey;
     } finally {
@@ -247,18 +243,8 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
       jsonObjectSingleKeyVersion.add(NAME_ENCRYPTION_KEY_ATTRIBUTE_NAME,
           Json.value(Objects.requireNonNull(encryptionKeyAttributeName)));
       jsonObjectSingleKeyVersion.add(NAME_ENCODED_KEY, Json.value(encodedKey));
-      cacheEntries.add(jsonObjectSingleKeyVersion);
+      updateCache(cacheEntries, jsonObjectSingleKeyVersion);
 
-      JsonArray jsonArrayEntries = new JsonArray();
-      for (JsonValue cacheEntry : cacheEntries) {
-        jsonArrayEntries.add(cacheEntry);
-      }
-
-      JsonObject jsonObjectRoot = new JsonObject();
-      jsonObjectRoot.add(NAME_ENTRIES, jsonArrayEntries);
-      String newCachePayload = jsonObjectRoot.toString(WriterConfig.MINIMAL);
-
-      cacheStorage.storeEntry(newCachePayload);
       return encodedKey;
     } finally {
       lock.unlock();
@@ -268,6 +254,41 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
   @Override
   public boolean isEncryptedTopic(String kafkaTopicName) {
     return realEncryptionKeyProvider.isEncryptedTopic(kafkaTopicName);
+  }
+
+  private void updateCache(List<JsonObject> oldCacheEntries, JsonObject newEntry) {
+    if (newEntry != null) {
+      oldCacheEntries.add(newEntry);
+    }
+
+    JsonArray jsonArrayEntries = new JsonArray();
+    for (JsonValue cacheEntry : oldCacheEntries) {
+      jsonArrayEntries.add(cacheEntry);
+    }
+
+    JsonObject jsonObjectRoot = new JsonObject();
+    jsonObjectRoot.add(NAME_ENTRIES, jsonArrayEntries);
+    String newCachePayload = jsonObjectRoot.toString(WriterConfig.MINIMAL);
+    storeNewCacheEntry(newCachePayload);
+  }
+
+  private void storeNewCacheEntry(String newCachePayload) {
+    if (newCachePayload.length() >= maxCacheSize) {
+      // wipe the cache if it is too long
+      log.info(
+          "2nd-level cache value is too long to store. Just use an empty value for the cache.");
+      newCachePayload = "{}";
+    }
+
+    try {
+      cacheStorage.storeEntry(newCachePayload);
+    } catch (Exception ex) {
+      if (log.isDebugEnabled()) {
+        log.debug(ex.getMessage(), ex);
+      } else {
+        log.warn("Failed to store 2nd-level cache value. Error: {}", ex.getMessage());
+      }
+    }
   }
 
   private String retrieveNewExpiredAtTimestamp() {
@@ -340,9 +361,82 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
     }
 
     if (matchingCurrentBestValues.size() > 1) {
-      throw new VaultRuntimeException("None deterministic encryption key. May clear your 2nd-Level-Cache to resolve the issue.");
+      throw new VaultRuntimeException(
+          "None deterministic encryption key. May clear your 2nd-Level-Cache to resolve the issue.");
     }
 
     return currentBestValue;
+  }
+
+  public static class CachedEncryptionKeyProviderBuilder {
+
+    private EncryptionKeyProvider realEncryptionKeyProvider;
+    private SecondLevelCacheStorage cacheStorage;
+    private Clock clock;
+    private Duration cachingDuration;
+    private Integer maxCacheSize;
+
+    /**
+     * @param realEncryptionKeyProvider the real EncryptionKeyProvider
+     * @return this
+     */
+    public CachedEncryptionKeyProviderBuilder realEncryptionKeyProvider(
+        EncryptionKeyProvider realEncryptionKeyProvider) {
+      this.realEncryptionKeyProvider = realEncryptionKeyProvider;
+      return this;
+    }
+
+    /**
+     * @param cacheStorage the second level cache storage interface
+     * @return this
+     */
+    public CachedEncryptionKeyProviderBuilder cacheStorage(SecondLevelCacheStorage cacheStorage) {
+      this.cacheStorage = cacheStorage;
+      return this;
+    }
+
+    /**
+     * @param clock a clock (set that for tests only)
+     * @return this
+     */
+    public CachedEncryptionKeyProviderBuilder clock(Clock clock) {
+      this.clock = clock;
+      return this;
+    }
+
+    /**
+     * @param cachingDuration the cache duration for the encryption keys. The decryption keys will
+     *                        never expire.
+     * @return this
+     */
+    public CachedEncryptionKeyProviderBuilder cachingDuration(Duration cachingDuration) {
+      this.cachingDuration = cachingDuration;
+      return this;
+    }
+
+    /**
+     * @param maxCacheSize the maximum allowed size (number of characters) of the cache storage -
+     *                     must be at least 500
+     * @return this
+     */
+    public CachedEncryptionKeyProviderBuilder maxCacheSize(Integer maxCacheSize) {
+      this.maxCacheSize = maxCacheSize;
+      return this;
+    }
+
+    /**
+     * @return the built CachedEncryptionKeyProvider
+     */
+    public CachedEncryptionKeyProvider build() {
+      if (clock == null) {
+        clock = Clock.systemDefaultZone();
+      }
+      if (maxCacheSize == null) {
+        maxCacheSize = Integer.MAX_VALUE;
+      }
+
+      return new CachedEncryptionKeyProvider(realEncryptionKeyProvider, cacheStorage, clock,
+          cachingDuration, maxCacheSize);
+    }
   }
 }

@@ -24,9 +24,13 @@ class CachedEncryptionKeyProviderTest {
     testClock = new TestClock("2023-08-01T17:45Z");
     realEncryptionKeyProvider = new EncryptionKeyProviderMock();
     cacheStorage = new CacheStorageMock();
-    cachedEncryptionKeyProvider = new CachedEncryptionKeyProvider(realEncryptionKeyProvider,
-        cacheStorage, testClock,
-        Duration.ofHours(3));
+    cachedEncryptionKeyProvider = CachedEncryptionKeyProvider.builder()
+        .realEncryptionKeyProvider(realEncryptionKeyProvider)
+        .cacheStorage(cacheStorage)
+        .clock(testClock)
+        .cachingDuration(Duration.ofHours(3))
+        .maxCacheSize(500)
+        .build();
   }
 
   @Test
@@ -317,5 +321,37 @@ class CachedEncryptionKeyProviderTest {
     // then: cacheStorage should have been called
     assertThat(cacheStorage.getMethodCalls())
         .containsExactly("retrieveEntry()");
+  }
+
+  @Test
+  void shouldShrinkStoredPayload() {
+    // given: a very long cache entry
+    StringBuilder sb = new StringBuilder();
+    sb.append("{\"entries\":[");
+    for (int version = 1; version < 10; version++) {
+      String part = "{\"topic\":\"someOtherTopic\",\"version\":9999,\"encryptionKeyAttributeName\":\"aes\",\"encodedKey\":\"someOtherSecret\",\"expireAt\":\"2023-08-01T17:45Z\"}"
+          .replace("9999", Integer.toString(version));
+      if (version > 1) {
+        sb.append(",");
+      }
+      sb.append(part);
+    }
+    sb.append("]}");
+    String cacheEntryPayload = sb.toString();
+    assertThat(cacheEntryPayload.length()).isGreaterThan(500);
+    cacheStorage.initEntry(cacheEntryPayload);
+    // given: current time
+    testClock.setCurrentTime("2023-08-01T17:45Z");
+    // when: method is called
+    cachedEncryptionKeyProvider.retrieveKeyForDecryption(TOPIC, 6, "aes");
+    // then: realEncryptionKeyProvider should have been called
+    assertThat(realEncryptionKeyProvider.getMethodCalls())
+        .containsExactly("retrieveKeyForDecryption(someTopic, 6, aes)");
+    // then: cacheStorage should have been called
+    assertThat(cacheStorage.getMethodCalls())
+        .containsExactly("retrieveEntry()", "storeEntry(..)");
+    String expectedShrinkedCacheEntryPayload = "{}";
+    assertThat(cacheStorage.retrieveEntry())
+        .isEqualTo(expectedShrinkedCacheEntryPayload);
   }
 }

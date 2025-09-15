@@ -49,9 +49,12 @@ class TheApp {
         vaultEncryptionKeyProviderConfig);
     SecondLevelCacheStorage cacheStorage = new SsmVaultCacheStorage(ssmClient);
     Duration secondLevelCacheDuration = Duration.ofHours(48);
-    EncryptionKeyProvider encryptionKeyProvider = new CachedEncryptionKeyProvider(
-        vaultEncryptionKeyProvider, cacheStorage, secondLevelCacheDuration
-    );
+    EncryptionKeyProvider encryptionKeyProvider = CachedEncryptionKeyProvider.builder()
+        .realEncryptionKeyProvider(vaultEncryptionKeyProvider)
+        .cacheStorage(cacheStorage)
+        .cachingDuration(secondLevelCacheDuration)
+        .maxCacheSize(4096) // AWS SSM has a limit of 4096 characters
+        .build();
     EncryptionService encryptionService = new EncryptionService(encryptionKeyProvider);
     DecryptionService decryptionService = new DecryptionService(encryptionKeyProvider);
     // [...]
