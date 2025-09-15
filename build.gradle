@@ -1,12 +1,11 @@
 plugins {
     // Apply the java-library plugin for API and implementation separation.
     id 'java-library'
-    // Publish libs to e.g maven-central
+    // Publish libs to e.g central.sonatype.org
     id 'maven-publish'
-    // sign artefacts before publishing to maven-central
-    id 'signing'
-    // publishing to Nexus that automates creating, closing, and releasing staging repositories
-    alias(libs.plugins.nexus.publish)
+    // publish to central.sonatype.org via the Central Publisher Portal
+    // see: https://jreleaser.org/guide/latest/examples/maven/maven-central.html#_gradle
+    alias(libs.plugins.jreleaser)
 }
 
 repositories {
@@ -49,15 +48,18 @@ jar {
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        maven(MavenPublication) {
             groupId = 'de.otto'
             artifactId = 'kafka-messaging-e2ee'
             description = 'Kafka Messaging End-To-End-Encryption'
+
             from components.java
+
             pom {
                 name = 'Kafka Messaging E2EE'
                 description = 'Kafka Messaging End-To-End-Encryption'
                 url = 'https://github.com/otto-de/kafka-messaging-e2ee'
+                inceptionYear = '2024'
                 licenses {
                     license {
                         name = 'The Apache License, Version 2.0'
@@ -80,16 +82,33 @@ publishing {
             }
         }
     }
-}
 
-nexusPublishing {
-    packageGroup = 'de.otto'
     repositories {
-        sonatype()
+        maven {
+            url = layout.buildDirectory.dir('staging-deploy')
+        }
     }
 }
 
-signing {
-//    required {  false }
-    sign publishing.publications.mavenJava
+jreleaser {
+    deploy {
+        maven {
+            mavenCentral {
+                sonatype {
+                    active = 'ALWAYS'
+                    url = 'https://central.sonatype.com/api/v1/publisher'
+                    stagingRepository('target/staging-deploy')
+                }
+            }
+        }
+    }
+}
+
+tasks.register("zipForUpload", Zip) {
+    dependsOn tasks.named('publish')
+
+    archiveFileName = 'central-bundle.zip'
+    from 'build/staging-deploy'
+    destinationDirectory = file('build/staging-deploy')
+    exclude '**/*.zip'
 }

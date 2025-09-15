@@ -1,5 +1,5 @@
 [versions]
-nexusPublishPlugInVersion = "2.0.0"
+jreleaserPlugInVersion = "1.20.0"
 
 jopenlibsVaultVersion = '6.2.0'
 slf4jVersion = '2.0.17'
@@ -18,4 +18,4 @@ assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertJVers
 
 
 [plugins]
-nexus-publish = { id = "io.github.gradle-nexus.publish-plugin", version.ref = "nexusPublishPlugInVersion" }
+jreleaser = { id = "org.jreleaser", version.ref = "jreleaserPlugInVersion" }
