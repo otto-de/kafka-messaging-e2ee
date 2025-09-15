@@ -261,15 +261,20 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
       oldCacheEntries.add(newEntry);
     }
 
-    JsonArray jsonArrayEntries = new JsonArray();
-    for (JsonValue cacheEntry : oldCacheEntries) {
-      jsonArrayEntries.add(cacheEntry);
-    }
-
+    JsonArray jsonArrayEntries = sanitizeCacheEntries(oldCacheEntries);
     JsonObject jsonObjectRoot = new JsonObject();
     jsonObjectRoot.add(NAME_ENTRIES, jsonArrayEntries);
     String newCachePayload = jsonObjectRoot.toString(WriterConfig.MINIMAL);
     storeNewCacheEntry(newCachePayload);
+  }
+
+  private JsonArray sanitizeCacheEntries(List<JsonObject> oldCacheEntries) {
+    // order entries by topic and version
+    JsonArray jsonArrayEntries = new JsonArray();
+    for (JsonValue cacheEntry : oldCacheEntries) {
+      jsonArrayEntries.add(cacheEntry);
+    }
+    return jsonArrayEntries;
   }
 
   private void storeNewCacheEntry(String newCachePayload) {
@@ -366,6 +371,29 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
     }
 
     return currentBestValue;
+  }
+
+  private static class CacheEntry {
+    private final String topic;
+    private final int version;
+    private final String encryptionKeyName;
+    private OffsetDateTime expiredAt;
+
+    public CacheEntry(String topic, int version, String encryptionKeyName, OffsetDateTime expiredAt) {
+      this.topic = topic;
+      this.version = version;
+      this.encryptionKeyName = encryptionKeyName;
+      this.expiredAt = expiredAt;
+    }
+
+    void updateExpiredAt(OffsetDateTime newExpiredAt) {
+      this.expiredAt = newExpiredAt;
+    }
+
+    String groupKey() {
+      // TODO
+      return topic + " / " + version + " / " + encryptionKeyName;
+    }
   }
 
   public static class CachedEncryptionKeyProviderBuilder {
