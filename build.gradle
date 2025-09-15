@@ -6,14 +6,7 @@ plugins {
     // sign artefacts before publishing to maven-central
     id 'signing'
     // publishing to Nexus that automates creating, closing, and releasing staging repositories
-    id "io.github.gradle-nexus.publish-plugin" version "2.0.0"
-}
-
-ext {
-    jopenlibsVaultVersion = '6.2.0'
-    slf4jVersion = '2.0.17'
-    junitVersion = '5.13.4'
-    assertJVersion = '3.27.4'
+    alias(libs.plugins.nexus.publish)
 }
 
 repositories {
@@ -33,14 +26,14 @@ test {
 }
 
 dependencies {
-    implementation "io.github.jopenlibs:vault-java-driver:${jopenlibsVaultVersion}"
-    implementation "org.slf4j:slf4j-api:${slf4jVersion}"
+    implementation libs.jopenlibs.vault
+    implementation libs.slf4j.api
 
     // test dependencies
-    testImplementation "org.junit.jupiter:junit-jupiter:${junitVersion}"
+    testImplementation libs.junit.jupiter
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testImplementation "org.assertj:assertj-core:${assertJVersion}"
-    testImplementation "org.slf4j:slf4j-simple:${slf4jVersion}"
+    testImplementation libs.assertj.core
+    testImplementation libs.slf4j.simple
 }
 
 java {

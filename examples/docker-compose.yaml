@@ -1,40 +1,37 @@
-version: '2.1'
-
 services:
-  zookeeper:
-    container_name: "example-1-zookeeper"
-    image: bitnami/zookeeper:3.7.0
-    ports:
-      - '2183:2181'
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
-
   kafka:
     container_name: "example-1-kafka"
-    image: bitnami/kafka:3.1.0
+    image: apache/kafka:4.0.0
     ports:
-      - '9096:9096'
-      - '9097:9097'
+      - 9097:9097
+    healthcheck:
+      test: /opt/kafka/bin/kafka-topics.sh --list --bootstrap-server localhost:9097
+      interval: 3s
+      timeout: 10s
+      retries: 20
     environment:
-      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-      - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_CFG_LISTENERS=CLIENT://:9096,EXTERNAL://:9097
-      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9096,EXTERNAL://localhost:9097
-      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
-    depends_on:
-      - zookeeper
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://:9097,CONTROLLER://localhost:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9097
+      KAFKA_CLIENT_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      #KAFKA_LOG4J_LOGGERS: 'kafka=DEBUG'
 
   kafka-init:
     container_name: "example-1-kafka-init"
-    image: bitnami/kafka:3.1.0
+    image: apache/kafka:4.0.0
+    network_mode: host
     entrypoint: /bin/sh -c
     command: >
       "
         ## Create Kafka Topics
-        /opt/bitnami/kafka/bin/kafka-topics.sh --create --bootstrap-server kafka:9096 --topic teamOneTopicOne   --partitions 3 --replication-factor 1
-        /opt/bitnami/kafka/bin/kafka-topics.sh --create --bootstrap-server kafka:9096 --topic teamOneTopicThree --partitions 3 --replication-factor 1
-        /opt/bitnami/kafka/bin/kafka-topics.sh --create --bootstrap-server kafka:9096 --topic teamTwoTopicTwo   --partitions 3 --replication-factor 1
+        /opt/kafka/bin/kafka-topics.sh --create --bootstrap-server localhost:9097 --topic teamOneTopicOne   --partitions 3 --replication-factor 1
+        /opt/kafka/bin/kafka-topics.sh --create --bootstrap-server localhost:9097 --topic teamOneTopicThree --partitions 3 --replication-factor 1
+        /opt/kafka/bin/kafka-topics.sh --create --bootstrap-server localhost:9097 --topic teamTwoTopicTwo   --partitions 3 --replication-factor 1
       "
     depends_on:
       - kafka

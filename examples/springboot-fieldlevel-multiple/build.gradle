@@ -1,7 +1,7 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.4.2'
-    id 'io.spring.dependency-management' version '1.1.7'
+    alias(libs.plugins.springBoot)
+    alias(libs.plugins.springDependencyManagement)
 }
 
 group = 'de.otto.kafka.messaging.e2ee.examples'
@@ -31,7 +31,7 @@ dependencies {
     testImplementation 'org.springframework.kafka:spring-kafka-test'
 
     // include our kafka-messaging-e2ee lib (run "./gradlew publishToMavenLocal" beforehand)
-    implementation "de.otto:kafka-messaging-e2ee:${kafkaE2eeLibraryVersion}"
+    implementation libs.kafka.e2ee
 }
 
 tasks.named('test') {

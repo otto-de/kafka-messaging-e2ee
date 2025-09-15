@@ -2,7 +2,8 @@ name: dependabot
 
 on:
   push:
-    branches: dependabot/**
+    branches:
+     - dependabot/**
 
 jobs:
   build:

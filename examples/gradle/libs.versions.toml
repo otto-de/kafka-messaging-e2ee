@@ -1,0 +1,16 @@
+[versions]
+dockerComposePlugInVersion = "0.17.12"
+springBootPlugInVersion = "3.5.5"
+springDependencyManagementPlugInVersion = "1.1.7"
+
+kafkaE2eeLibraryVersion = '2.2.7'
+
+
+[libraries]
+kafka-e2ee = { module = "de.otto:kafka-messaging-e2ee", version.ref = "kafkaE2eeLibraryVersion" }
+
+
+[plugins]
+dockerCompose = { id = "com.avast.gradle.docker-compose", version.ref = "dockerComposePlugInVersion" }
+springBoot = { id = "org.springframework.boot", version.ref = "springBootPlugInVersion" }
+springDependencyManagement = { id = "io.spring.dependency-management", version.ref = "springDependencyManagementPlugInVersion" }

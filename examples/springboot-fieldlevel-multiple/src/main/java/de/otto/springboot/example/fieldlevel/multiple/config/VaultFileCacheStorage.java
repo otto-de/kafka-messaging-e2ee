@@ -39,7 +39,12 @@ public class VaultFileCacheStorage implements SecondLevelCacheStorage {
         }
       }
 
-      log.debug("retrieveEntry(): cache result: {}", resultStringBuilder);
+      if (log.isDebugEnabled()) {
+        log.debug("retrieveEntry(): cache result: {}", resultStringBuilder);
+      } else {
+        log.info("retrieveEntry() called successfully - cache.characters={}",
+            resultStringBuilder.length());
+      }
       return resultStringBuilder.toString();
     } catch (FileNotFoundException ex) {
       log.warn(ex.getMessage());

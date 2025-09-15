@@ -9,6 +9,15 @@ updates:
       timezone: Europe/Berlin
     open-pull-requests-limit: 20
 
+  # Check for updates of gradle dependencies every day at 13:00
+  - package-ecosystem: gradle
+    directory: "/examples/"
+    schedule:
+      interval: daily
+      time: "13:00"
+      timezone: Europe/Berlin
+    open-pull-requests-limit: 20
+
   # Check for updates to GitHub Actions every weekday
   - package-ecosystem: "github-actions"
     directory: "/"
