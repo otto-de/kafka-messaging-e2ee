@@ -1,3 +1,10 @@
+# [2.3.0](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.2.7...v2.3.0) (2025-09-15)
+
+
+### Features
+
+* **caching:** add a size limit to the 2nd-level-cache - AWS SSM has a limit of 4096 characters, also introduce builder pattern for CachedEncryptionKeyProvider ([5ab499d](https://github.com/otto-de/kafka-messaging-e2ee/commit/5ab499d1fffc86b03ea11051b24e97458866b8bc))
+
 ## [2.2.7](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.2.6...v2.2.7) (2025-02-26)
 
 
