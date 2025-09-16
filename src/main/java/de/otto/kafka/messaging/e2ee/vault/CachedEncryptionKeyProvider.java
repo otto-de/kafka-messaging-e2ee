@@ -186,7 +186,8 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
       CacheEntry cachedKeyEntry = findAtMostOneEntry(cacheEntries,
           entry -> Objects.equals(topic, entry.topic())
               && version == entry.version()
-              && entry.encryptionKeyName() == null,
+              && entry.encryptionKeyName() == null
+              && entry.expiredAtText() == null,
           this.noSortOrder());
 
       if (cachedKeyEntry != null) {
@@ -215,7 +216,8 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
       CacheEntry cachedKeyEntry = findAtMostOneEntry(cacheEntries,
           entry -> Objects.equals(topic, entry.topic())
               && version == entry.version()
-              && Objects.equals(encryptionKeyAttributeName, entry.encryptionKeyName()),
+              && Objects.equals(encryptionKeyAttributeName, entry.encryptionKeyName())
+              && entry.expiredAtText() == null,
           this.noSortOrder());
 
       if (cachedKeyEntry != null) {
@@ -441,6 +443,15 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
     CacheEntry updateExpiredAt(OffsetDateTime newExpiredAt) {
       this.expiredAtText = newExpiredAt.format(DTF);
       return this;
+    }
+
+    @Override
+    public String toString() {
+      return "CacheEntry{" + topic + ", version=" + version
+          + (encryptionKeyName == null ? "" : ", encryptionKeyName='" + encryptionKeyName + '\'')
+          + ", encodedKey='" + encodedKey + '\''
+          + (expiredAtText == null ? "" : ", expiredAtText='" + expiredAtText + '\'')
+          + '}';
     }
   }
 

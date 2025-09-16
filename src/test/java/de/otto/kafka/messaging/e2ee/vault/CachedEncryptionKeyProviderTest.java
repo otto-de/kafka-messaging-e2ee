@@ -251,7 +251,7 @@ class CachedEncryptionKeyProviderTest {
   @Test
   void shouldRetrieveKeyForDecryptionWhenCacheIsPresent() {
     // given: a cache entry
-    String cacheEntryPayload = "{\"entries\":[{\"topic\":\"someTopic\",\"version\":6,\"encodedKey\":\"someOtherSecret\",\"expireAt\":\"2023-08-01T17:45Z\"}]}";
+    String cacheEntryPayload = "{\"entries\":[{\"topic\":\"someTopic\",\"version\":6,\"encodedKey\":\"someOtherSecret\"}]}";
     cacheStorage.initEntry(cacheEntryPayload);
     // when: method is called
     String result = cachedEncryptionKeyProvider.retrieveKeyForDecryption(TOPIC, 6);
@@ -310,7 +310,7 @@ class CachedEncryptionKeyProviderTest {
   @Test
   void shouldRetrieveKeyForDecryptionWithNameWhenCacheIsPresent() {
     // given: a cache entry
-    String cacheEntryPayload = "{\"entries\":[{\"topic\":\"someTopic\",\"version\":6,\"encryptionKeyAttributeName\":\"aes\",\"encodedKey\":\"someOtherSecret\",\"expireAt\":\"2023-08-01T17:45Z\"}]}";
+    String cacheEntryPayload = "{\"entries\":[{\"topic\":\"someTopic\",\"version\":6,\"encryptionKeyAttributeName\":\"aes\",\"encodedKey\":\"someOtherSecret\"}]}";
     cacheStorage.initEntry(cacheEntryPayload);
     // when: method is called
     String result = cachedEncryptionKeyProvider.retrieveKeyForDecryption(TOPIC, 6, "aes");
@@ -362,8 +362,13 @@ class CachedEncryptionKeyProviderTest {
     cachedEncryptionKeyProvider.retrieveKeyForDecryption(TOPIC, 3, "aes");
     // when: retrieving the key for encryption (which has an expiration time)
     cachedEncryptionKeyProvider.retrieveKeyForEncryption(TOPIC);
+    // when: retrieving the key for decryption (which has no expiration time)
+    cachedEncryptionKeyProvider.retrieveKeyForDecryption(TOPIC, 3, "aes");
     // then: only one entry should exist (that one with an expiration time)
-    String expectedCacheEntryPayload = "{\"entries\":[{\"topic\":\"someTopic\",\"version\":3,\"encryptionKeyAttributeName\":\"aes\",\"encodedKey\":\"someSecret\",\"expireAt\":\"2023-08-01T20:45Z\"}]}";
+    String expectedCacheEntryPayload = "{\"entries\":["
+        + "{\"topic\":\"someTopic\",\"version\":3,\"encryptionKeyAttributeName\":\"aes\",\"encodedKey\":\"someSecret3\"},"
+        + "{\"topic\":\"someTopic\",\"version\":3,\"encryptionKeyAttributeName\":\"aes\",\"encodedKey\":\"someSecret\",\"expireAt\":\"2023-08-01T20:45Z\"}"
+        + "]}";
     assertThat(cacheStorage.retrieveEntry())
         .isEqualTo(expectedCacheEntryPayload);
   }
@@ -375,8 +380,13 @@ class CachedEncryptionKeyProviderTest {
     cachedEncryptionKeyProvider.retrieveKeyForDecryption(TOPIC, 3);
     // when: retrieving the key for encryption (which has an expiration time)
     cachedEncryptionKeyProvider.retrieveKeyForEncryption(TOPIC);
+    // when: retrieving the key for decryption (which has no expiration time)
+    cachedEncryptionKeyProvider.retrieveKeyForDecryption(TOPIC, 3);
     // then: only one entry should exist (that one with an expiration time)
-    String expectedCacheEntryPayload = "{\"entries\":[{\"topic\":\"someTopic\",\"version\":3,\"encryptionKeyAttributeName\":\"aes\",\"encodedKey\":\"someSecret\",\"expireAt\":\"2023-08-01T20:45Z\"}]}";
+    String expectedCacheEntryPayload = "{\"entries\":["
+        + "{\"topic\":\"someTopic\",\"version\":3,\"encodedKey\":\"someSecret2\"},"
+        + "{\"topic\":\"someTopic\",\"version\":3,\"encryptionKeyAttributeName\":\"aes\",\"encodedKey\":\"someSecret\",\"expireAt\":\"2023-08-01T20:45Z\"}"
+        + "]}";
     assertThat(cacheStorage.retrieveEntry())
         .isEqualTo(expectedCacheEntryPayload);
   }
