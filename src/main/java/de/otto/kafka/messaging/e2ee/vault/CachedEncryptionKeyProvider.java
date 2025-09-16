@@ -146,7 +146,6 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
       OffsetDateTime newExpiredAtTimestamp = retrieveNewExpiredAtTimestamp();
       try {
         keyVersion = realEncryptionKeyProvider.retrieveKeyForEncryption(topic);
-
         if (keyVersion == null) {
           // no encryption is needed, so no caching is needed
           return null;
@@ -262,6 +261,7 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
 
   private List<CacheEntry> sanitizeCacheEntries(List<CacheEntry> oldCacheEntries) {
     // order entries by topic and version
+    oldCacheEntries.sort(CacheEntry::compare);
     return oldCacheEntries;
   }
 
@@ -452,6 +452,38 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
           + ", encodedKey='" + encodedKey + '\''
           + (expiredAtText == null ? "" : ", expiredAtText='" + expiredAtText + '\'')
           + '}';
+    }
+
+    public int compare(CacheEntry other) {
+      int comp = this.topic.compareTo(other.topic);
+      if (comp != 0) {
+        return comp;
+      }
+
+      comp = Integer.compare(this.version, other.version);
+      if (comp != 0) {
+        return -1 * comp;
+      }
+
+      if (this.encryptionKeyName != null && other.encryptionKeyName != null) {
+        comp = this.encryptionKeyName.compareTo(other.encryptionKeyName);
+      } else if (this.encryptionKeyName == null && other.encryptionKeyName != null) {
+        return 1;
+      } else if (this.encryptionKeyName != null) {
+        return -1;
+      }
+      if (comp != 0) {
+        return comp;
+      }
+
+      if (this.expiredAtText != null && other.expiredAtText != null) {
+        return this.expiredAtText.compareTo(other.expiredAtText);
+      } else if (this.expiredAtText == null && other.expiredAtText != null) {
+        return 1;
+      } else if (this.expiredAtText != null) {
+        return -1;
+      }
+      return 0;
     }
   }
 
