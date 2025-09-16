@@ -91,7 +91,7 @@ function uploadDeployment() {
   curl -o curlout.txt --silent --request POST --header "Authorization: Bearer ${apiToken}" \
       "https://central.sonatype.com/api/v1/publisher/status?id=${deploymentId}"
 
-  MAX_WAIT_TIME=300
+  MAX_WAIT_TIME=900
   CURRENT_WAIT_TIME=0
   CURRENT_STATE=$(currentDeploymentState "${apiToken}" "${deploymentId}" )
   while [ "${CURRENT_STATE}" != "FAILED" ] && [ "${CURRENT_STATE}" != "VALIDATED" ] && [ "${CURRENT_STATE}" != "PUBLISHED" ]

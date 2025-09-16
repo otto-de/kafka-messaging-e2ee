@@ -16,7 +16,7 @@
             "prepareCmd": "./ci/incrementReleaseVersion.sh ${nextRelease.version}"
           }],
         ["@semantic-release/git", {
-            "assets": [ "gradle.properties", "CHANGELOG.md" ]
+            "assets": [ "gradle.properties", "CHANGELOG.md", "docs/USAGE.md" ]
           }]
       ]
 }
