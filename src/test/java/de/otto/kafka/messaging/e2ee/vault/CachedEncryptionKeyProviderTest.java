@@ -356,10 +356,23 @@ class CachedEncryptionKeyProviderTest {
   }
 
   @Test
-  void shouldNotStoreDataAmbiguously() {
+  void shouldNotStoreDataAmbiguously_KnownEncryptionKeyAttributeName() {
     // given: an empty cache
     // when: retrieving the key for decryption (which has no expiration time)
     cachedEncryptionKeyProvider.retrieveKeyForDecryption(TOPIC, 3, "aes");
+    // when: retrieving the key for encryption (which has an expiration time)
+    cachedEncryptionKeyProvider.retrieveKeyForEncryption(TOPIC);
+    // then: only one entry should exist (that one with an expiration time)
+    String expectedCacheEntryPayload = "{\"entries\":[{\"topic\":\"someTopic\",\"version\":3,\"encryptionKeyAttributeName\":\"aes\",\"encodedKey\":\"someSecret\",\"expireAt\":\"2023-08-01T20:45Z\"}]}";
+    assertThat(cacheStorage.retrieveEntry())
+        .isEqualTo(expectedCacheEntryPayload);
+  }
+
+  @Test
+  void shouldNotStoreDataAmbiguously_UnknownEncryptionKeyAttributeName() {
+    // given: an empty cache
+    // when: retrieving the key for decryption (which has no expiration time)
+    cachedEncryptionKeyProvider.retrieveKeyForDecryption(TOPIC, 3);
     // when: retrieving the key for encryption (which has an expiration time)
     cachedEncryptionKeyProvider.retrieveKeyForEncryption(TOPIC);
     // then: only one entry should exist (that one with an expiration time)
