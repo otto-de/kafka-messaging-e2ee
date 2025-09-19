@@ -4,7 +4,7 @@ jreleaserPlugInVersion = "1.20.0"
 jopenlibsVaultVersion = '6.2.0'
 slf4jVersion = '2.0.17'
 junitVersion = '5.13.4'
-assertJVersion = '3.27.4'
+assertJVersion = '3.27.5'
 
 
 [libraries]
