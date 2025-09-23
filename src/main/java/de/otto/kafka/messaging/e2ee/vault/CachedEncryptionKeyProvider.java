@@ -192,6 +192,7 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
       JsonObject cachedKeyEntry = findAtMostOneEntry(cacheEntries,
           entry -> Objects.equals(topic, entry.getString(NAME_TOPIC))
               && version == entry.getInt(NAME_VERSION)
+              && entry.getString(NAME_EXPIRE_AT) == null
               && entry.getString(NAME_ENCRYPTION_KEY_ATTRIBUTE_NAME) == null,
           this.noSortOrder());
 
@@ -224,6 +225,7 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
       JsonObject cachedKeyEntry = findAtMostOneEntry(cacheEntries,
           entry -> Objects.equals(topic, entry.getString(NAME_TOPIC))
               && version == entry.getInt(NAME_VERSION)
+              && entry.getString(NAME_EXPIRE_AT) == null
               && Objects.equals(encryptionKeyAttributeName,
               entry.getString(NAME_ENCRYPTION_KEY_ATTRIBUTE_NAME)),
           this.noSortOrder());
