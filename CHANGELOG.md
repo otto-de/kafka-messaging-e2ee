@@ -1,3 +1,10 @@
+## [2.3.1](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.3.0...v2.3.1) (2025-09-23)
+
+
+### Bug Fixes
+
+* **cache:** fix issue [#50](https://github.com/otto-de/kafka-messaging-e2ee/issues/50) - "None deterministic encryption key" when using the same 2nd-level-cache for encryption and decryption ([0ce8748](https://github.com/otto-de/kafka-messaging-e2ee/commit/0ce874831b49c127e90b23f17a5e7ef487ccf105))
+
 # [2.3.0](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.2.7...v2.3.0) (2025-09-15)
 
 
