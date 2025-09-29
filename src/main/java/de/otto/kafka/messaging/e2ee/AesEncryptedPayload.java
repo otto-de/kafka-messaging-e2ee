@@ -18,6 +18,8 @@ public final class AesEncryptedPayload {
   private final String encryptionKeyAttributeName;
 
   /**
+   * Constructor for a not encrypted payload
+   *
    * @param plainPayload the plain text as byte array.
    */
   public AesEncryptedPayload(byte[] plainPayload) {
@@ -28,6 +30,8 @@ public final class AesEncryptedPayload {
   }
 
   /**
+   * Constructor for an encrypted payload. The encryption key name is unknown.
+   *
    * @param encryptedPayload     an encrypted payload as byte array
    * @param initializationVector the raw initialization vector
    * @param keyVersion           the vault version of the encryption key entry
@@ -37,6 +41,8 @@ public final class AesEncryptedPayload {
   }
 
   /**
+   * Constructor for an encrypted payload.
+   *
    * @param encryptedPayload           an encrypted payload as byte array
    * @param initializationVector       the raw initialization vector
    * @param keyVersion                 the vault version of the encryption key entry
@@ -54,6 +60,8 @@ public final class AesEncryptedPayload {
   }
 
   /**
+   * Constructor for an encrypted payload. The encryption key name is unknown.
+   *
    * @param encryptedPayload           an encrypted payload as byte array
    * @param initializationVectorBase64 the initialization vector base64 encoded
    * @param keyVersion                 the vault version of the encryption key entry
@@ -64,6 +72,8 @@ public final class AesEncryptedPayload {
   }
 
   /**
+   * Constructor for an encrypted payload.
+   *
    * @param encryptedPayload           an encrypted payload as byte array
    * @param initializationVectorBase64 the initialization vector base64 encoded
    * @param keyVersion                 the vault version of the encryption key entry
@@ -82,6 +92,8 @@ public final class AesEncryptedPayload {
   }
 
   /**
+   * Static constructor for an unencrypted payload.
+   *
    * @param plainPayload the plain payload as byte array
    * @return an AesEncryptedPayload of an unencrypted payload
    */
@@ -90,6 +102,8 @@ public final class AesEncryptedPayload {
   }
 
   /**
+   * Static constructor for an encrypted payload.
+   *
    * @param encryptedPayload     an encrypted payload as byte array
    * @param initializationVector the raw initialization vector
    * @param keyVersion           the vault data for the encryption key
@@ -105,6 +119,8 @@ public final class AesEncryptedPayload {
   }
 
   /**
+   * Static constructor for an encrypted payload.
+   *
    * @param encryptedPayload           an encrypted payload as byte array
    * @param initializationVectorBase64 the initialization vector base64 encoded
    * @param keyVersion                 the vault metadata for the encryption key
@@ -118,6 +134,8 @@ public final class AesEncryptedPayload {
   }
 
   /**
+   * Static constructor for an encrypted payload.
+   *
    * @param encryptedPayload           an encrypted payload as byte array
    * @param initializationVectorBase64 the initialization vector base64 encoded
    * @param keyVersion                 the vault version of the encryption key entry
@@ -135,6 +153,8 @@ public final class AesEncryptedPayload {
   }
 
   /**
+   * Static constructor for an encrypted payload.
+   *
    * @param encryptedPayload     an encrypted payload as byte array
    * @param initializationVector the raw initialization vector
    * @param cipherSpec           the vault metadata for the encryption key
@@ -152,6 +172,8 @@ public final class AesEncryptedPayload {
   }
 
   /**
+   * Static constructor for an encrypted payload.
+   *
    * @param encryptedPayload           an encrypted payload as byte array
    * @param initializationVectorBase64 the initialization vector base64 encoded
    * @param cipherSpec                 the vault metadata for the encryption key
@@ -167,6 +189,8 @@ public final class AesEncryptedPayload {
   }
 
   /**
+   * Checks whether this class represents an encrypted payload.
+   *
    * @return <code>true</code> when this object holds an encrypted value. <code>false</code> when
    * this object hold an unencrypted value.
    */
@@ -177,6 +201,8 @@ public final class AesEncryptedPayload {
   }
 
   /**
+   * Gets the potentially encrypted payload.
+   *
    * @return the value - which might is encrypted
    * @see #isEncrypted()
    */
@@ -185,6 +211,8 @@ public final class AesEncryptedPayload {
   }
 
   /**
+   * Gets the initialization vector.
+   *
    * @return the raw initialization vector or <code>null</code> when the value is encrypted
    * @see #isEncrypted()
    */
@@ -193,6 +221,8 @@ public final class AesEncryptedPayload {
   }
 
   /**
+   * Gets the initialization vector in base64 encoding.
+   *
    * @return the initialization vector base64 encoded or <code>null</code> when the value is
    * encrypted
    * @see #isEncrypted()
@@ -205,6 +235,8 @@ public final class AesEncryptedPayload {
   }
 
   /**
+   * Gets the version of the key within the vault.
+   *
    * @return the vault version of the encryption key entry
    */
   public int keyVersion() {
@@ -212,6 +244,8 @@ public final class AesEncryptedPayload {
   }
 
   /**
+   * Gets the name of the encryption key within the vault.
+   *
    * @return name of the encryption key property within the vault. When <code>null</code>, then the
    * default value must be used.
    */

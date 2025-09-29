@@ -59,6 +59,8 @@ public interface KafkaEncryptionHelper {
   }
 
   /**
+   * Create an AesEncryptedPayload using the kafka header values.
+   *
    * @param encryptedPayload                the encrypted payload
    * @param kafkaHeaderInitializationVector value of kafka header of "initialization vector"
    * @param kafkaHeaderCiphersText          value of kafka header of "ciphers"
@@ -79,6 +81,8 @@ public interface KafkaEncryptionHelper {
   }
 
   /**
+   * Create an AesEncryptedPayload using the kafka header values.
+   *
    * @param encryptedPayload                  the encrypted payload
    * @param kafkaHeaderInitializationVector   value of deprecated kafka header of "initialization
    *                                          vector"
@@ -117,6 +121,8 @@ public interface KafkaEncryptionHelper {
   }
 
   /**
+   * Create an AesEncryptedPayload using the kafka header values.
+   *
    * @param encryptedPayload                the encrypted payload
    * @param kafkaHeaderInitializationVector value of kafka header of "initialization vector"
    * @param kafkaHeaderCiphersText          value of kafka header of "ciphers"
@@ -132,9 +138,14 @@ public interface KafkaEncryptionHelper {
   }
 
   /**
-   * @param encryptedPayload                the encrypted payload
-   * @param kafkaHeaderInitializationVector value of kafka header of "initialization vector"
-   * @param kafkaHeaderCiphersText          value of kafka header of "ciphers"
+   * Create an AesEncryptedPayload using the kafka header values.
+   *
+   * @param encryptedPayload                  the encrypted payload
+   * @param kafkaHeaderInitializationVector   value of kafka header of "initialization vector"
+   * @param kafkaHeaderCiphersText            value of kafka header of "ciphers"
+   * @param kafkaCeHeaderInitializationVector value of kafka header of "ce_e2eeiv"
+   * @param kafkaCeHeaderCipherName           value of kafka header of "ce_e2eekeyname"
+   * @param kafkaCeHeaderCipherVersion        value of kafka header of "ce_e2eekeyversion"
    * @return a AesEncryptedPayload instance with the given values
    * @see #aesEncryptedPayloadOfKafka(byte[], byte[], byte[], byte[], byte[], byte[])
    */
@@ -269,8 +280,8 @@ public interface KafkaEncryptionHelper {
 
   /**
    * @param encryptedPayload the payload
-   * @return the value for the initialization vector. Note: you should check {@link
-   * AesEncryptedPayload#isEncrypted()} before calling this method.
+   * @return the value for the initialization vector. Note: you should check
+   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
    * @see #headerNameIv(boolean)
    */
   static String mapToIvHeaderValueText(AesEncryptedPayload encryptedPayload) {
@@ -279,8 +290,8 @@ public interface KafkaEncryptionHelper {
 
   /**
    * @param encryptedPayload the payload
-   * @return the value for the initialization vector. Note: you should check {@link
-   * AesEncryptedPayload#isEncrypted()} before calling this method.
+   * @return the value for the initialization vector. Note: you should check
+   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
    * @see #headerNameIv(boolean)
    */
   static byte[] mapToIvHeaderValue(AesEncryptedPayload encryptedPayload) {
@@ -294,8 +305,8 @@ public interface KafkaEncryptionHelper {
 
   /**
    * @param encryptedPayload the payload
-   * @return the value for the cipher metadata. Note: you should check {@link
-   * AesEncryptedPayload#isEncrypted()} before calling this method.
+   * @return the value for the cipher metadata. Note: you should check
+   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
    * @see #headerNameCiphers(boolean)
    */
   static String mapToCipherHeaderValueText(AesEncryptedPayload encryptedPayload) {
@@ -341,8 +352,8 @@ public interface KafkaEncryptionHelper {
 
   /**
    * @param encryptedPayload the payload
-   * @return the value for the cipher name. Note: you should check {@link
-   * AesEncryptedPayload#isEncrypted()} before calling this method.
+   * @return the value for the cipher name. Note: you should check
+   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
    * @see #headerNameCiphers(boolean)
    */
   static byte[] mapToCipherNameHeaderValue(AesEncryptedPayload encryptedPayload) {
@@ -352,8 +363,8 @@ public interface KafkaEncryptionHelper {
 
   /**
    * @param encryptedPayload the payload
-   * @return the value for the cipher name. Note: you should check {@link
-   * AesEncryptedPayload#isEncrypted()} before calling this method.
+   * @return the value for the cipher name. Note: you should check
+   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
    * @see #headerNameCiphers(boolean)
    */
   static String mapToCipherNameHeaderText(AesEncryptedPayload encryptedPayload) {
@@ -370,8 +381,8 @@ public interface KafkaEncryptionHelper {
 
   /**
    * @param encryptedPayload the payload
-   * @return the value for the cipher version. Note: you should check {@link
-   * AesEncryptedPayload#isEncrypted()} before calling this method.
+   * @return the value for the cipher version. Note: you should check
+   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
    * @see #headerNameCiphers(boolean)
    */
   static byte[] mapToCipherVersionHeaderValue(AesEncryptedPayload encryptedPayload) {
@@ -381,8 +392,8 @@ public interface KafkaEncryptionHelper {
 
   /**
    * @param encryptedPayload the payload
-   * @return the value for the cipher version. Note: you should check {@link
-   * AesEncryptedPayload#isEncrypted()} before calling this method.
+   * @return the value for the cipher version. Note: you should check
+   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
    * @see #headerNameCiphers(boolean)
    */
   static String mapToCipherVersionHeaderText(AesEncryptedPayload encryptedPayload) {
@@ -395,8 +406,8 @@ public interface KafkaEncryptionHelper {
 
   /**
    * @param encryptedPayload the payload
-   * @return the value for the cipher metadata. Note: you should check {@link
-   * AesEncryptedPayload#isEncrypted()} before calling this method.
+   * @return the value for the cipher metadata. Note: you should check
+   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
    * @see #headerNameCiphers(boolean)
    */
   static byte[] mapToCipherHeaderValue(AesEncryptedPayload encryptedPayload) {

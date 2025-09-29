@@ -45,6 +45,8 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
   private final int maxCacheSize;
 
   /**
+   * Constructor of that class.
+   *
    * @param realEncryptionKeyProvider the VaultEncryptionKeyProvider
    * @param cacheStorage              the 2nd-level cache storage
    * @param cachingDuration           the cache duration for the encryption keys. The decryption
@@ -59,6 +61,8 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
   }
 
   /**
+   * Test constructor of that class.
+   *
    * @param realEncryptionKeyProvider the VaultEncryptionKeyProvider
    * @param cacheStorage              the 2nd-level cache storage
    * @param cachingDuration           the cache duration for the encryption keys. The decryption
@@ -74,6 +78,8 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
   }
 
   /**
+   * Test constructor of that class.
+   *
    * @param realEncryptionKeyProvider the VaultEncryptionKeyProvider
    * @param cacheStorage              the 2nd-level cache storage
    * @param cachingDuration           the cache duration for the encryption keys. The decryption
@@ -104,6 +110,8 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
   }
 
   /**
+   * Returns a builder for that class.
+   *
    * @return a builder for that class
    */
   public static CachedEncryptionKeyProviderBuilder builder() {
@@ -370,6 +378,9 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
     return currentBestValue;
   }
 
+  /**
+   * Builder for CachedEncryptionKeyProvider instances.
+   */
   public static class CachedEncryptionKeyProviderBuilder {
 
     private EncryptionKeyProvider realEncryptionKeyProvider;
@@ -379,6 +390,14 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
     private Integer maxCacheSize;
 
     /**
+     * The standard constructor.
+     */
+    public CachedEncryptionKeyProviderBuilder() {
+    }
+
+    /**
+     * Sets the real EncryptionKeyProvider.
+     *
      * @param realEncryptionKeyProvider the real EncryptionKeyProvider
      * @return this
      */
@@ -389,6 +408,8 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
     }
 
     /**
+     * Sets the cache storage engine.
+     *
      * @param cacheStorage the second level cache storage interface
      * @return this
      */
@@ -398,6 +419,8 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
     }
 
     /**
+     * Sets the clock which is needed to expire the cache entries.
+     *
      * @param clock a clock (set that for tests only)
      * @return this
      */
@@ -407,6 +430,8 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
     }
 
     /**
+     * Sets the max caching duration for encryption keys.
+     *
      * @param cachingDuration the cache duration for the encryption keys. The decryption keys will
      *                        never expire.
      * @return this
@@ -417,6 +442,8 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
     }
 
     /**
+     * Sets the cache size limit.
+     *
      * @param maxCacheSize the maximum allowed size (number of characters) of the cache storage -
      *                     must be at least 500
      * @return this
@@ -427,6 +454,8 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
     }
 
     /**
+     * Creates the CachedEncryptionKeyProvider.
+     *
      * @return the built CachedEncryptionKeyProvider
      */
     public CachedEncryptionKeyProvider build() {

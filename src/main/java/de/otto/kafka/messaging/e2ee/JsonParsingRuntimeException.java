@@ -6,6 +6,8 @@ package de.otto.kafka.messaging.e2ee;
 public class JsonParsingRuntimeException extends RuntimeException {
 
   /**
+   * Constructor for that class.
+   *
    * @param msg an error message
    */
   public JsonParsingRuntimeException(String msg) {

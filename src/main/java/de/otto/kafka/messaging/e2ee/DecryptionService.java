@@ -19,6 +19,11 @@ public final class DecryptionService {
   private final EncryptionKeyProvider encryptionKeyProvider;
   private final Cache<TopicKeyVersion, Key> aesKeyCache;
 
+  /**
+   * Constructor for that class.
+   *
+   * @param encryptionKeyProvider the key provider
+   */
   public DecryptionService(EncryptionKeyProvider encryptionKeyProvider) {
     Objects.requireNonNull(encryptionKeyProvider, "encryptionKeyProvider");
     this.encryptionKeyProvider = encryptionKeyProvider;

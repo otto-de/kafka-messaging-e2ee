@@ -10,15 +10,28 @@ import java.util.Base64;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+/**
+ * Decryption service for field-level encrypted fields.
+ */
 public final class FieldLevelDecryptionService {
 
   private final DecryptionService decryptionService;
 
+  /**
+   * Constructor for that class.
+   *
+   * @param decryptionService the DecryptionService
+   */
   public FieldLevelDecryptionService(DecryptionService decryptionService) {
     Objects.requireNonNull(decryptionService, "decryptionService");
     this.decryptionService = decryptionService;
   }
 
+  /**
+   * Constructor for that class.
+   *
+   * @param encryptionKeyProvider the EncryptionKeyProvider
+   */
   public FieldLevelDecryptionService(EncryptionKeyProvider encryptionKeyProvider) {
     this(new DecryptionService(encryptionKeyProvider));
   }

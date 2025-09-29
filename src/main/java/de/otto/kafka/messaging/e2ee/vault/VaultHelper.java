@@ -1,6 +1,5 @@
 package de.otto.kafka.messaging.e2ee.vault;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -16,10 +15,6 @@ public interface VaultHelper {
   }
 
   private static String urlDecode(String urlEncodedValue) {
-    try {
-      return URLDecoder.decode(urlEncodedValue, StandardCharsets.US_ASCII.toString());
-    } catch (UnsupportedEncodingException ex) {
-      throw new VaultRuntimeException(ex);
-    }
+    return URLDecoder.decode(urlEncodedValue, StandardCharsets.US_ASCII);
   }
 }
