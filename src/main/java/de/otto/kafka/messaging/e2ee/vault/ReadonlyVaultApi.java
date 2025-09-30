@@ -3,6 +3,9 @@ package de.otto.kafka.messaging.e2ee.vault;
 import io.github.jopenlibs.vault.VaultException;
 import io.github.jopenlibs.vault.response.LogicalResponse;
 
+/**
+ * Vault API which supports read operations only
+ */
 public interface ReadonlyVaultApi {
 
   /**
