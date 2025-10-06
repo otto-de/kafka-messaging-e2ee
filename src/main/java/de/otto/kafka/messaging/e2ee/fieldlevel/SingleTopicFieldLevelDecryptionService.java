@@ -4,11 +4,21 @@ import de.otto.kafka.messaging.e2ee.DecryptionService;
 import de.otto.kafka.messaging.e2ee.EncryptionKeyProvider;
 import java.util.Objects;
 
+/**
+ * Single topic field level decryption service. It's a wrapper for the FieldLevelDecryptionService.
+ */
 public final class SingleTopicFieldLevelDecryptionService {
 
   private final FieldLevelDecryptionService fieldLevelDecryptionService;
   private final String kafkaTopicName;
 
+  /**
+   * The constructor using a FieldLevelDecryptionService.
+   *
+   * @param fieldLevelDecryptionService the FieldLevelDecryptionService
+   * @param kafkaTopicName              the name of the kafka topic which contains the encrypted
+   *                                    fields
+   */
   public SingleTopicFieldLevelDecryptionService(
       FieldLevelDecryptionService fieldLevelDecryptionService, String kafkaTopicName) {
     Objects.requireNonNull(fieldLevelDecryptionService, "fieldLevelDecryptionService");
@@ -17,11 +27,23 @@ public final class SingleTopicFieldLevelDecryptionService {
     this.kafkaTopicName = kafkaTopicName;
   }
 
+  /**
+   * The constructor using a DecryptionService.
+   *
+   * @param decryptionService the DecryptionService
+   * @param kafkaTopicName    the name of the kafka topic which contains the encrypted fields
+   */
   public SingleTopicFieldLevelDecryptionService(DecryptionService decryptionService,
       String kafkaTopicName) {
     this(new FieldLevelDecryptionService(decryptionService), kafkaTopicName);
   }
 
+  /**
+   * The constructor using a EncryptionKeyProvider.
+   *
+   * @param encryptionKeyProvider the EncryptionKeyProvider
+   * @param kafkaTopicName        the name of the kafka topic which contains the encrypted fields
+   */
   public SingleTopicFieldLevelDecryptionService(EncryptionKeyProvider encryptionKeyProvider,
       String kafkaTopicName) {
     this(new DecryptionService(encryptionKeyProvider), kafkaTopicName);

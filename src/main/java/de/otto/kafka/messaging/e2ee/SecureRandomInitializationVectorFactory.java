@@ -5,7 +5,16 @@ import static de.otto.kafka.messaging.e2ee.DefaultAesEncryptionConfiguration.GCM
 import java.security.SecureRandom;
 import java.util.Random;
 
+/**
+ * Standard implementation for InitializationVectorFactory
+ */
 public final class SecureRandomInitializationVectorFactory implements InitializationVectorFactory {
+
+  /**
+   * Default constructor
+   */
+  public SecureRandomInitializationVectorFactory() {
+  }
 
   @Override
   public byte[] generateInitializationVector() {

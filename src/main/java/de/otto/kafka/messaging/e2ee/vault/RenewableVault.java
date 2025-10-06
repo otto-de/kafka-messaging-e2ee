@@ -11,6 +11,10 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A ReadonlyVaultApi which can reconnect to the vault. This is handy when the credentials are
+ * expiring.
+ */
 public final class RenewableVault implements ReadonlyVaultApi {
 
   private static final Logger log = LoggerFactory.getLogger(RenewableVault.class);
@@ -21,6 +25,12 @@ public final class RenewableVault implements ReadonlyVaultApi {
   private boolean isAuthRenewable;
   private LocalDateTime authLeaseValidUntil;
 
+  /**
+   * Constructor using App-Role authentication.
+   *
+   * @param configAuth the configuration
+   * @param appRole    the app role name
+   */
   public RenewableVault(VaultConfig configAuth, VaultAppRole appRole) {
     Objects.requireNonNull(configAuth, "configAuth is required");
     Objects.requireNonNull(appRole, "appRole is required");
@@ -32,6 +42,11 @@ public final class RenewableVault implements ReadonlyVaultApi {
     this.appRoleConfig = appRole;
   }
 
+  /**
+   * Constructor using token based authentication.
+   *
+   * @param configAuth the configuration
+   */
   public RenewableVault(VaultConfig configAuth) {
     Objects.requireNonNull(configAuth, "configAuth is required");
     this.configAuth = configAuth;

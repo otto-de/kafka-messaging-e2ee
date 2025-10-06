@@ -7,12 +7,22 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
+/**
+ * Encryption key provider that can be configured for more than one topic. Otherwise, each topic
+ * needs its own configuration.
+ */
 public final class MultiTopicVaultEncryptionKeyProviderConfig implements
     VaultEncryptionKeyProviderConfig {
 
   private final VaultConnectionConfig vaultConnectionConfig;
   private final List<KafkaTopicConfigEntry> configEntries;
 
+  /**
+   * Constructor for that class.
+   *
+   * @param vaultConnectionConfig the vault connection configuration
+   * @param configEntries         the list of the configuration entries
+   */
   public MultiTopicVaultEncryptionKeyProviderConfig(
       VaultConnectionConfig vaultConnectionConfig,
       List<KafkaTopicConfigEntry> configEntries) {
@@ -22,6 +32,11 @@ public final class MultiTopicVaultEncryptionKeyProviderConfig implements
     this.configEntries = configEntries;
   }
 
+  /**
+   * Use the builder pattern to create instances of that class.
+   *
+   * @return the builder
+   */
   public static MultiTopicVaultEncryptionKeyProviderConfigBuilder builder() {
     return new MultiTopicVaultEncryptionKeyProviderConfigBuilder();
   }
@@ -104,34 +119,70 @@ public final class MultiTopicVaultEncryptionKeyProviderConfig implements
     return currentBestValue;
   }
 
+  /**
+   * Builder class for the MultiTopicVaultEncryptionKeyProviderConfig
+   */
   public static class MultiTopicVaultEncryptionKeyProviderConfigBuilder {
 
     private final List<KafkaTopicConfigEntry> configEntries = new ArrayList<>();
     private VaultConnectionConfig vaultConnectionConfig;
 
+    /**
+     * Default constructor
+     */
+    public MultiTopicVaultEncryptionKeyProviderConfigBuilder() {
+    }
+
+    /**
+     * Sets the "vaultConnectionConfig" value.
+     *
+     * @param vaultConnectionConfig the vault connection configuration
+     * @return the builder
+     */
     public MultiTopicVaultEncryptionKeyProviderConfigBuilder vaultConnectionConfig(
         VaultConnectionConfig vaultConnectionConfig) {
       this.vaultConnectionConfig = vaultConnectionConfig;
       return this;
     }
 
+    /**
+     * Sets the "configEntries" value.
+     *
+     * @param configEntries all configuration entries
+     * @return the builder
+     * @see #configEntry(KafkaTopicConfigEntry)
+     */
     public MultiTopicVaultEncryptionKeyProviderConfigBuilder configEntries(
         Collection<KafkaTopicConfigEntry> configEntries) {
       this.configEntries.addAll(configEntries);
       return this;
     }
 
+    /**
+     * Adds another config entry to the end of the configuration entry list
+     *
+     * @param configEntry a new configuration entry
+     * @return the builder
+     */
     public MultiTopicVaultEncryptionKeyProviderConfigBuilder configEntry(
         KafkaTopicConfigEntry configEntry) {
       this.configEntries.add(configEntry);
       return this;
     }
 
+    /**
+     * Creates a MultiTopicVaultEncryptionKeyProviderConfig
+     *
+     * @return the MultiTopicVaultEncryptionKeyProviderConfig
+     */
     public MultiTopicVaultEncryptionKeyProviderConfig build() {
       return new MultiTopicVaultEncryptionKeyProviderConfig(vaultConnectionConfig, configEntries);
     }
   }
 
+  /**
+   * Configuration entry
+   */
   public static class KafkaTopicConfigEntry {
 
     private final boolean isDefault;
@@ -142,6 +193,24 @@ public final class MultiTopicVaultEncryptionKeyProviderConfig implements
     private final String teamName;
     private final String encryptionKeyAttributeName;
 
+    /**
+     * the constructor. Just use the builder which is easier to use.
+     *
+     * @param isDefault                  <code>true</code> its the default/base config
+     * @param encryptionEnabled          <code>true</code> encryption is enabled.
+     *                                   <code>false</code>
+     *                                   encryption is disabled. <code>null</code> encryption is not
+     *                                   defined using that entry.
+     * @param kafkaTopicName             a topic name
+     * @param kafkaTopicNamePrefix       a topic name prefix
+     * @param vaultPath                  a vault path
+     * @param vaultPathTemplate          a vault path template. Valid placeholders are
+     *                                   <code>%TEAMNAME%</code> and <code>%TOPICNAME%</code>
+     * @param teamName                   a team name
+     * @param encryptionKeyAttributeName JSON attribute name of the encryption key within the vault
+     *                                   payload
+     * @see #builder()
+     */
     public KafkaTopicConfigEntry(boolean isDefault, Boolean encryptionEnabled,
         String kafkaTopicName, String kafkaTopicNamePrefix,
         String vaultPath, String vaultPathTemplate,
@@ -159,34 +228,75 @@ public final class MultiTopicVaultEncryptionKeyProviderConfig implements
       this.encryptionKeyAttributeName = encryptionKeyAttributeName;
     }
 
+    /**
+     * Use builder pattern to create entries.
+     *
+     * @return a builder
+     */
     public static KafkaTopicConfigEntryBuilder builder() {
       return new KafkaTopicConfigEntryBuilder();
     }
 
+    /**
+     * Gets the "isDefault" property
+     *
+     * @return <code>true</code> its the default/base config
+     */
     public boolean isDefault() {
       return isDefault;
     }
 
+    /**
+     * Gets the "encryptionEnabled" property
+     *
+     * @return <code>true</code> encryption is enabled. <code>false</code> encryption is disabled.
+     * <code>null</code> encryption is not defined using that entry
+     */
     public Boolean encryptionEnabled() {
       return encryptionEnabled;
     }
 
+    /**
+     * Gets the "kafkaTopicName" property
+     *
+     * @return a topic name
+     */
     public String kafkaTopicName() {
       return kafkaTopicName;
     }
 
+    /**
+     * Gets the "kafkaTopicNamePrefix" property
+     *
+     * @return a topic name prefix
+     */
     public String kafkaTopicNamePrefix() {
       return kafkaTopicNamePrefix;
     }
 
+    /**
+     * Gets the "pathExpression" property
+     *
+     * @return the vault path expression
+     */
     public VaultPathExpression pathExpression() {
       return pathExpression;
     }
 
+    /**
+     * Gets the "teamName" property
+     *
+     * @return the team name
+     */
     public String teamName() {
       return teamName;
     }
 
+    /**
+     * Gets the "encryptionKeyAttributeName" property
+     *
+     * @return JSON attribute name of the encryption key within the vault payload
+     */
     public String encryptionKeyAttributeName() {
       return encryptionKeyAttributeName;
     }
@@ -205,6 +315,9 @@ public final class MultiTopicVaultEncryptionKeyProviderConfig implements
     }
   }
 
+  /**
+   * Builder class for a configuration entry.
+   */
   public static final class KafkaTopicConfigEntryBuilder {
 
     private boolean isDefault = false;
@@ -216,32 +329,73 @@ public final class MultiTopicVaultEncryptionKeyProviderConfig implements
     private String teamName;
     private String encryptionKeyAttributeName;
 
+    /**
+     * Default constructor
+     */
+    public KafkaTopicConfigEntryBuilder() {
+    }
+
+    /**
+     * Sets the "isDefault" value.
+     *
+     * @param isDefault <code>true</code> its the default/base config entry
+     * @return the builder
+     */
     public KafkaTopicConfigEntryBuilder isDefault(Boolean isDefault) {
       this.isDefault = Objects.requireNonNullElse(isDefault, false);
       return this;
     }
 
+    /**
+     * Sets the "encryptionEnabled" value.
+     *
+     * @param encryptionEnabled <code>true</code> encryption is enabled. <code>false</code>
+     *                          encryption is disabled. <code>null</code> encryption is not defined
+     *                          using that entry.
+     * @return the builder
+     */
     public KafkaTopicConfigEntryBuilder encryptionEnabled(Boolean encryptionEnabled) {
       this.encryptionEnabled = encryptionEnabled;
       return this;
     }
 
+    /**
+     * Sets the "kafkaTopicName" value.
+     *
+     * @param kafkaTopicName the kafka topic name which is associated with that config entry
+     * @return the builder
+     */
     public KafkaTopicConfigEntryBuilder kafkaTopicName(String kafkaTopicName) {
       this.kafkaTopicName = kafkaTopicName;
       return this;
     }
 
+    /**
+     * Sets the "kafkaTopicNamePrefix" value.
+     *
+     * @param kafkaTopicNamePrefix the kafka topic name prefix of topic that should be associated
+     *                             with that config entry
+     * @return the builder
+     */
     public KafkaTopicConfigEntryBuilder kafkaTopicNamePrefix(String kafkaTopicNamePrefix) {
       this.kafkaTopicNamePrefix = kafkaTopicNamePrefix;
       return this;
     }
 
+    /**
+     * Sets the "vaultPath" value.
+     *
+     * @param vaultPath the vault path
+     * @return the builder
+     */
     public KafkaTopicConfigEntryBuilder vaultPath(String vaultPath) {
       this.vaultPath = vaultPath;
       return this;
     }
 
     /**
+     * Sets the "vaultPathTemplate" value.
+     *
      * @param vaultPathTemplate the template may contain <code>%TOPICNAME%</code> and/or
      *                          <code>%TEAMNAME%</code>
      * @return the builder
@@ -251,14 +405,23 @@ public final class MultiTopicVaultEncryptionKeyProviderConfig implements
       return this;
     }
 
+    /**
+     * Sets the "teamName" value.
+     *
+     * @param teamName th team name
+     * @return the builder
+     */
     public KafkaTopicConfigEntryBuilder teamName(String teamName) {
       this.teamName = teamName;
       return this;
     }
 
     /**
-     * @param encryptionKeyAttributeName name of the encryption key attribute within the vault
-     *                                   secret. The default value is <code>encryption_key</code>
+     * Sets the "encryptionKeyAttributeName" value.
+     *
+     * @param encryptionKeyAttributeName name of the JSON attribute within the vault secret that
+     *                                   contains the encryption key. The default value is
+     *                                   <code>encryption_key</code>
      * @return the builder
      */
     public KafkaTopicConfigEntryBuilder encryptionKeyAttributeName(
@@ -267,26 +430,50 @@ public final class MultiTopicVaultEncryptionKeyProviderConfig implements
       return this;
     }
 
+    /**
+     * Creates the entry.
+     *
+     * @return the config entry
+     */
     public KafkaTopicConfigEntry build() {
       return new KafkaTopicConfigEntry(isDefault, encryptionEnabled, kafkaTopicName,
           kafkaTopicNamePrefix, vaultPath, vaultPathTemplate, teamName, encryptionKeyAttributeName);
     }
   }
 
+  /**
+   * Value class which holds the vault path expression.
+   */
   public static final class VaultPathExpression {
 
     private final String vaultPath;
     private final String vaultPathTemplate;
 
+    /**
+     * Constructor for that class
+     *
+     * @param vaultPath         a vault path
+     * @param vaultPathTemplate a vault path template
+     */
     public VaultPathExpression(String vaultPath, String vaultPathTemplate) {
       this.vaultPath = vaultPath;
       this.vaultPathTemplate = vaultPathTemplate;
     }
 
+    /**
+     * Gets the vault path
+     *
+     * @return the vault path
+     */
     public String vaultPath() {
       return vaultPath;
     }
 
+    /**
+     * Gets the vault path expression
+     *
+     * @return the vault path expression
+     */
     public String vaultPathTemplate() {
       return vaultPathTemplate;
     }

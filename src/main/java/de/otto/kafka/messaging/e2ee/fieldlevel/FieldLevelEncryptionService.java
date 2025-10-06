@@ -9,15 +9,28 @@ import de.otto.kafka.messaging.e2ee.EncryptionService;
 import java.util.Base64;
 import java.util.Objects;
 
+/**
+ * Encryption service. Used to encrypt fields.
+ */
 public final class FieldLevelEncryptionService {
 
   private final EncryptionService encryptionService;
 
+  /**
+   * Constructor for that class.
+   *
+   * @param encryptionService the EncryptionService
+   */
   public FieldLevelEncryptionService(EncryptionService encryptionService) {
     Objects.requireNonNull(encryptionService, "encryptionService");
     this.encryptionService = encryptionService;
   }
 
+  /**
+   * Constructor for that class.
+   *
+   * @param encryptionKeyProvider the EncryptionKeyProvider
+   */
   public FieldLevelEncryptionService(EncryptionKeyProvider encryptionKeyProvider) {
     this(new EncryptionService(encryptionKeyProvider));
   }
