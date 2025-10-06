@@ -299,10 +299,6 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
   }
 
   private List<CacheEntry> loadCacheEntries() {
-    return loadCacheEntriesV1();
-  }
-
-  private List<CacheEntry> loadCacheEntriesV1() {
     String cachedPayload = null;
     try {
       cachedPayload = cacheStorage.retrieveEntry();
@@ -318,16 +314,31 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
       return new ArrayList<>();
     }
     JsonObject jsonObjectRoot = Json.parse(cachedPayload).asObject();
+
+    // TODO
+    return loadCacheEntriesV1(jsonObjectRoot);
+  }
+
+  private List<CacheEntry> loadCacheEntriesV1(JsonObject jsonObjectRoot) {
     if (jsonObjectRoot.get(NAME_V1_ENTRIES) == null) {
       return new ArrayList<>();
     }
     JsonArray jsonArrayEntries = jsonObjectRoot.get(NAME_V1_ENTRIES).asArray();
-    List<JsonObject> cacheEntries = new ArrayList<>();
+    List<CacheEntry> cacheEntries = new ArrayList<>();
     for (JsonValue jsonValue : jsonArrayEntries.values()) {
-      cacheEntries.add(jsonValue.asObject());
-    }
+      JsonObject jsonObject = jsonValue.asObject();
+      String topic = jsonObject.getString(NAME_V1_TOPIC);
+      int version = jsonObject.getInt(NAME_V1_VERSION);
+      String encryptionKeyAttributeName = jsonObject
+          .getString(NAME_V1_ENCRYPTION_KEY_ATTRIBUTE_NAME);
+      String encodedKey = jsonObject.getString(NAME_V1_ENCODED_KEY);
+      String expiredAtText = jsonObject.getString(NAME_V1_EXPIRE_AT);
 
-    // convet
+      CacheEntry cacheEntry = new CacheEntry(topic, version, encryptionKeyAttributeName, encodedKey,
+          expiredAtText);
+      cacheEntries.add(cacheEntry);
+    }
+    return cacheEntries;
   }
 
   private Comparator<CacheEntry> sortByVersion() {
