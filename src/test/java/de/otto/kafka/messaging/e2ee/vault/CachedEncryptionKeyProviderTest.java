@@ -46,7 +46,7 @@ class CachedEncryptionKeyProviderTest {
     assertThat(result.encryptionKeyAttributeName()).isEqualTo("aes");
     assertThat(result.encodedKey()).isEqualTo("someSecret");
     // then: cacheStorage should have been called
-    String expectedCacheEntryPayload = "{\"entries\":[{\"topic\":\"someTopic\",\"version\":3,\"encryptionKeyAttributeName\":\"aes\",\"encodedKey\":\"someSecret\",\"expireAt\":\"2023-08-01T20:45Z\"}]}";
+    String expectedCacheEntryPayload = "{\"v\":2,\"t\":[{\"t\":\"someTopic\",\"e\":[{\"v\":3,\"n\":\"aes\",\"x\":\"2023-08-01T20:45Z\",\"k\":\"someSecret\"}]}]}";
     assertThat(cacheStorage.getMethodCalls())
         .containsExactly("retrieveEntry()", "storeEntry(..)");
     assertThat(cacheStorage.retrieveEntry())

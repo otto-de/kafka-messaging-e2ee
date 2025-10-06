@@ -32,13 +32,13 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
 
   private static final String NAME_VERSION = "v";
 
-  private static final String NAME_V2_TOPICS = "top";
+  private static final String NAME_V2_TOPICS = "t";
   private static final String NAME_V2_TOPIC = "t";
   private static final String NAME_V2_ENTRIES = "e";
   private static final String NAME_V2_VERSION = "v";
   private static final String NAME_V2_ENCRYPTION_KEY_ATTRIBUTE_NAME = "n";
   private static final String NAME_V2_ENCODED_KEY = "k";
-  private static final String NAME_V2_EXPIRE_AT = "exp";
+  private static final String NAME_V2_EXPIRE_AT = "x";
 
   private static final String NAME_V1_ENTRIES = "entries";
   private static final String NAME_V1_TOPIC = "topic";
@@ -268,13 +268,39 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
         .plus(cachingDuration);
   }
 
-  private void updateCache(List<CacheEntry> oldCacheEntries) {
+  private void updateCache(List<CacheEntry> cacheEntries) {
     // order entries by topic and version
-    oldCacheEntries.sort(CacheEntry::compare);
-
-    // TODO
+    cacheEntries.sort(CacheEntry::compare);
 
     JsonObject jsonObjectRoot = new JsonObject();
+    // current format version
+    jsonObjectRoot.add(NAME_VERSION, 2);
+    JsonArray jsonTopicsArray = new JsonArray();
+
+    String lastTopic = "";
+    JsonArray jsonTopicEntriesArray = null;
+    for (CacheEntry cacheEntry : cacheEntries) {
+      String currentTopic = cacheEntry.topic();
+      if (jsonTopicEntriesArray == null
+          || !currentTopic.equals(lastTopic)) {
+        JsonObject jsonTopicObject = new JsonObject();
+        jsonTopicObject.add(NAME_V2_TOPIC, cacheEntry.topic());
+        jsonTopicEntriesArray = new JsonArray();
+        jsonTopicObject.add(NAME_V2_ENTRIES, jsonTopicEntriesArray);
+        jsonTopicsArray.add(jsonTopicObject);
+      }
+
+      JsonObject jsonEntryObject = new JsonObject();
+      jsonEntryObject.add(NAME_V2_VERSION, cacheEntry.version());
+      jsonEntryObject.addIfNotNull(NAME_V2_ENCRYPTION_KEY_ATTRIBUTE_NAME,
+          cacheEntry.encryptionKeyName());
+      jsonEntryObject.addIfNotNull(NAME_V2_EXPIRE_AT, cacheEntry.expiredAtText());
+      jsonEntryObject.add(NAME_V2_ENCODED_KEY, cacheEntry.encodedKey());
+      jsonTopicEntriesArray.add(jsonEntryObject);
+    }
+
+    jsonObjectRoot.add(NAME_V2_TOPICS, jsonTopicsArray);
+
     String newCachePayload = jsonObjectRoot.toString(WriterConfig.MINIMAL);
     storeNewCacheEntry(newCachePayload);
   }
