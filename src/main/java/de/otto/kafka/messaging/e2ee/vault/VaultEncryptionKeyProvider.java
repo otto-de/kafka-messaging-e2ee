@@ -15,6 +15,12 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Default implementation of EncryptionKeyProvider. It uses a hashicorp vault to store the
+ * encryption keys. The encryption keys may change over time. Therefor each key version can be
+ * accessed via its version. Different topics use different vault paths to store the encryption
+ * keys.
+ */
 public final class VaultEncryptionKeyProvider implements EncryptionKeyProvider {
 
   private static final Logger log = LoggerFactory.getLogger(VaultEncryptionKeyProvider.class);
@@ -22,8 +28,12 @@ public final class VaultEncryptionKeyProvider implements EncryptionKeyProvider {
   private final VaultEncryptionKeyProviderConfig config;
   private ReadonlyVaultApi vault;
 
-  public VaultEncryptionKeyProvider(
-      VaultEncryptionKeyProviderConfig config) {
+  /**
+   * Constructor
+   *
+   * @param config the configuration
+   */
+  public VaultEncryptionKeyProvider(VaultEncryptionKeyProviderConfig config) {
     this.config = config;
     this.vault = null;
   }

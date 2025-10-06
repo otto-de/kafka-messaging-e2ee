@@ -7,7 +7,7 @@ package de.otto.kafka.messaging.e2ee.vault;
 public interface SecondLevelCacheStorage {
 
   /**
-   * stores the given payload somewere locally. E.g. in a File or AWS Parameter Store or GCP Secret
+   * stores the given payload somewhere locally. E.g. in a File or AWS Parameter Store or GCP Secret
    * Manager
    *
    * @param payload the payload to be stored. Is never <code>null</code>
@@ -15,6 +15,8 @@ public interface SecondLevelCacheStorage {
   void storeEntry(String payload);
 
   /**
+   * reads the previously stored payload
+   *
    * @return the previously stored payload or <code>null</code>
    */
   String retrieveEntry();
