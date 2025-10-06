@@ -1,6 +1,11 @@
 package de.otto.kafka.messaging.e2ee.vault;
 
 import de.otto.kafka.messaging.e2ee.EncryptionKeyProvider;
+import io.github.jopenlibs.vault.json.Json;
+import io.github.jopenlibs.vault.json.JsonArray;
+import io.github.jopenlibs.vault.json.JsonObject;
+import io.github.jopenlibs.vault.json.JsonValue;
+import io.github.jopenlibs.vault.json.WriterConfig;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -24,6 +29,13 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
 
   private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mmX");
   private static final Logger log = LoggerFactory.getLogger(CachedEncryptionKeyProvider.class);
+
+  private static final String NAME_ENTRIES = "entries";
+  private static final String NAME_TOPIC = "topic";
+  private static final String NAME_VERSION = "version";
+  private static final String NAME_ENCRYPTION_KEY_ATTRIBUTE_NAME = "encryptionKeyAttributeName";
+  private static final String NAME_ENCODED_KEY = "encodedKey";
+  private static final String NAME_EXPIRE_AT = "expireAt";
 
   private final ReentrantLock lock = new ReentrantLock();
   private final EncryptionKeyProvider realEncryptionKeyProvider;
@@ -110,22 +122,24 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
   public KeyVersion retrieveKeyForEncryption(String topic) {
     lock.lock();
     try {
-      List<CacheEntry> cacheEntries = loadCacheEntries();
+      List<JsonObject> cacheEntries = loadCacheEntries();
 
       KeyVersion cachedKeyVersion = null;
-      CacheEntry cachedKeyEntry = findAtMostOneEntry(cacheEntries,
-          entry -> Objects.equals(topic, entry.topic())
-              && entry.hasEncryptionKeyName()
-              && entry.hasExpiredAt(),
+      JsonObject cachedKeyEntry = findAtMostOneEntry(cacheEntries,
+          entry -> Objects.equals(topic, entry.getString(NAME_TOPIC))
+              && entry.getString(NAME_ENCRYPTION_KEY_ATTRIBUTE_NAME) != null
+              && entry.getString(NAME_EXPIRE_AT) != null,
           this.sortByVersion());
 
       if (cachedKeyEntry != null) {
-        int version = cachedKeyEntry.version();
-        String encryptionKeyAttributeName = cachedKeyEntry.encryptionKeyName();
-        String encodedKey = cachedKeyEntry.encodedKey();
+        int version = cachedKeyEntry.getInt(NAME_VERSION);
+        String encryptionKeyAttributeName = cachedKeyEntry.getString(
+            NAME_ENCRYPTION_KEY_ATTRIBUTE_NAME);
+        String encodedKey = cachedKeyEntry.getString(NAME_ENCODED_KEY);
         cachedKeyVersion = new KeyVersion(version, encryptionKeyAttributeName, encodedKey);
 
-        OffsetDateTime latestKeyVersionExpiredAt = cachedKeyEntry.expiredAtOffsetDateTime()
+        OffsetDateTime latestKeyVersionExpiredAt = OffsetDateTime.parse(
+                cachedKeyEntry.getString(NAME_EXPIRE_AT), DTF)
             // add up to 2 minutes, so we prevent peek cache expiration
             .plus(Math.round(Math.random() * 120_000), ChronoUnit.MILLIS);
 
@@ -138,7 +152,7 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
 
       // we have no cache entry or the cache entry has expired, so retrieve value from the real vault
       KeyVersion keyVersion;
-      OffsetDateTime newExpiredAt = retrieveNewExpiredAtTimestamp();
+      String expiredAtTimestampString = retrieveNewExpiredAtTimestamp();
       try {
         keyVersion = realEncryptionKeyProvider.retrieveKeyForEncryption(topic);
 
@@ -149,22 +163,28 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
 
         // update cache
         if (cachedKeyEntry == null || !keyVersion.equals(cachedKeyVersion)) {
-          CacheEntry newCacheEntry = CacheEntry.forDecryption(topic, keyVersion, newExpiredAt);
-          cacheEntries.add(newCacheEntry);
+          JsonObject jsonObjectSingleKeyVersion = new JsonObject();
+          jsonObjectSingleKeyVersion.add(NAME_TOPIC, Json.value(topic));
+          jsonObjectSingleKeyVersion.add(NAME_VERSION, Json.value(keyVersion.version()));
+          jsonObjectSingleKeyVersion.add(NAME_ENCRYPTION_KEY_ATTRIBUTE_NAME,
+              Json.value(Objects.requireNonNull(keyVersion.encryptionKeyAttributeName())));
+          jsonObjectSingleKeyVersion.add(NAME_ENCODED_KEY, Json.value(keyVersion.encodedKey()));
+          jsonObjectSingleKeyVersion.add(NAME_EXPIRE_AT, Json.value(expiredAtTimestampString));
+          cacheEntries.add(jsonObjectSingleKeyVersion);
         } else {
           log.debug("update cached key version for topic {} with new expiry date {}", topic,
-              newExpiredAt);
-          cachedKeyEntry.updateExpiredAt(newExpiredAt);
+              expiredAtTimestampString);
+          cachedKeyEntry.set(NAME_EXPIRE_AT, Json.value(expiredAtTimestampString));
         }
       } catch (Exception ex) {
         if (cachedKeyEntry == null) {
           throw ex;
         }
         log.warn("Retrieval of Vault EncryptionKey failed. Use cached EncryptionKey instead.", ex);
-        cachedKeyEntry.updateExpiredAt(newExpiredAt);
+        cachedKeyEntry.set(NAME_EXPIRE_AT, Json.value(expiredAtTimestampString));
         keyVersion = cachedKeyVersion;
       }
-      updateCache(cacheEntries);
+      updateCache(cacheEntries, null);
 
       return keyVersion;
     } finally {
@@ -176,25 +196,27 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
   public String retrieveKeyForDecryption(String topic, int version) {
     lock.lock();
     try {
-      List<CacheEntry> cacheEntries = loadCacheEntries();
-      CacheEntry cachedKeyEntry = findAtMostOneEntry(cacheEntries,
-          entry -> Objects.equals(topic, entry.topic())
-              && version == entry.version()
-              && !entry.hasExpiredAt()
-              && !entry.hasEncryptionKeyName(),
+      List<JsonObject> cacheEntries = loadCacheEntries();
+      JsonObject cachedKeyEntry = findAtMostOneEntry(cacheEntries,
+          entry -> Objects.equals(topic, entry.getString(NAME_TOPIC))
+              && version == entry.getInt(NAME_VERSION)
+              && entry.getString(NAME_EXPIRE_AT) == null
+              && entry.getString(NAME_ENCRYPTION_KEY_ATTRIBUTE_NAME) == null,
           this.noSortOrder());
 
       if (cachedKeyEntry != null) {
-        return cachedKeyEntry.encodedKey();
+        return cachedKeyEntry.getString(NAME_ENCODED_KEY);
       }
 
       // fetch key for decryption from real vault
       String encodedKey = realEncryptionKeyProvider.retrieveKeyForDecryption(topic, version);
 
       // update cache
-      CacheEntry cacheEntry = CacheEntry.forEncryption(topic, version, encodedKey);
-      cacheEntries.add(cacheEntry);
-      updateCache(cacheEntries);
+      JsonObject jsonObjectSingleKeyVersion = new JsonObject();
+      jsonObjectSingleKeyVersion.add(NAME_TOPIC, Json.value(topic));
+      jsonObjectSingleKeyVersion.add(NAME_VERSION, Json.value(version));
+      jsonObjectSingleKeyVersion.add(NAME_ENCODED_KEY, Json.value(encodedKey));
+      updateCache(cacheEntries, jsonObjectSingleKeyVersion);
 
       return encodedKey;
     } finally {
@@ -207,16 +229,17 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
       String encryptionKeyAttributeName) {
     lock.lock();
     try {
-      List<CacheEntry> cacheEntries = loadCacheEntries();
-      CacheEntry cachedKeyEntry = findAtMostOneEntry(cacheEntries,
-          entry -> Objects.equals(topic, entry.topic())
-              && version == entry.version()
-              && !entry.hasExpiredAt()
-              && Objects.equals(encryptionKeyAttributeName, entry.encryptionKeyName()),
+      List<JsonObject> cacheEntries = loadCacheEntries();
+      JsonObject cachedKeyEntry = findAtMostOneEntry(cacheEntries,
+          entry -> Objects.equals(topic, entry.getString(NAME_TOPIC))
+              && version == entry.getInt(NAME_VERSION)
+              && entry.getString(NAME_EXPIRE_AT) == null
+              && Objects.equals(encryptionKeyAttributeName,
+              entry.getString(NAME_ENCRYPTION_KEY_ATTRIBUTE_NAME)),
           this.noSortOrder());
 
       if (cachedKeyEntry != null) {
-        return cachedKeyEntry.encodedKey();
+        return cachedKeyEntry.getString(NAME_ENCODED_KEY);
       }
 
       // fetch key for decryption from real vault
@@ -224,10 +247,13 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
           encryptionKeyAttributeName);
 
       // update cache
-      CacheEntry cacheEntry = CacheEntry.forEncryptionWithKeyName(topic, version,
-          encryptionKeyAttributeName, encodedKey);
-      cacheEntries.add(cacheEntry);
-      updateCache(cacheEntries);
+      JsonObject jsonObjectSingleKeyVersion = new JsonObject();
+      jsonObjectSingleKeyVersion.add(NAME_TOPIC, Json.value(topic));
+      jsonObjectSingleKeyVersion.add(NAME_VERSION, Json.value(version));
+      jsonObjectSingleKeyVersion.add(NAME_ENCRYPTION_KEY_ATTRIBUTE_NAME,
+          Json.value(Objects.requireNonNull(encryptionKeyAttributeName)));
+      jsonObjectSingleKeyVersion.add(NAME_ENCODED_KEY, Json.value(encodedKey));
+      updateCache(cacheEntries, jsonObjectSingleKeyVersion);
 
       return encodedKey;
     } finally {
@@ -240,32 +266,20 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
     return realEncryptionKeyProvider.isEncryptedTopic(kafkaTopicName);
   }
 
-  private void updateCache(List<CacheEntry> oldCacheEntries) {
-    // order entries by topic and version
-    oldCacheEntries.sort(CacheEntry::compare);
-
-    // build cache content
-    StringBuilder cacheContent = new StringBuilder();
-    cacheContent.append("v1\n");
-
-    String currentTopic = "";
-    for (CacheEntry entry : oldCacheEntries) {
-      if (!entry.topic().equals(currentTopic)) {
-        cacheContent.append("t:").append(entry.topic()).append("\n");
-        currentTopic = entry.topic();
-      }
-      cacheContent.append("v:").append(entry.version());
-      if (entry.expiredAtText() != null) {
-        cacheContent.append(" ex:").append(entry.expiredAtText());
-      }
-      if (entry.encryptionKeyName() != null) {
-        cacheContent.append(" kn:").append(entry.encryptionKeyName());
-      }
-      cacheContent.append(" ek:").append(entry.encodedKey()).append("\n");
+  private void updateCache(List<JsonObject> oldCacheEntries, JsonObject newEntry) {
+    if (newEntry != null) {
+      oldCacheEntries.add(newEntry);
     }
 
-    // store cache content
-    storeNewCacheEntry(cacheContent.toString());
+    JsonArray jsonArrayEntries = new JsonArray();
+    for (JsonValue cacheEntry : oldCacheEntries) {
+      jsonArrayEntries.add(cacheEntry);
+    }
+
+    JsonObject jsonObjectRoot = new JsonObject();
+    jsonObjectRoot.add(NAME_ENTRIES, jsonArrayEntries);
+    String newCachePayload = jsonObjectRoot.toString(WriterConfig.MINIMAL);
+    storeNewCacheEntry(newCachePayload);
   }
 
   private void storeNewCacheEntry(String newCachePayload) {
@@ -287,49 +301,17 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
     }
   }
 
-  private List<CacheEntry> loadCacheEntries() {
-    ArrayList<CacheEntry> cacheEntries = new ArrayList<>();
+  private String retrieveNewExpiredAtTimestamp() {
+    return OffsetDateTime.now(clock)
+        .withOffsetSameInstant(ZoneOffset.UTC)
+        .plus(cachingDuration)
+        .format(DTF);
+  }
+
+  private List<JsonObject> loadCacheEntries() {
+    String cachedPayload = null;
     try {
-      String cachedPayload = cacheStorage.retrieveEntry();
-
-      if (cachedPayload == null || !cachedPayload.startsWith("v1\n")) {
-        return cacheEntries;
-      }
-
-      String[] lines = cachedPayload.split("\n");
-      String topic = null;
-      for (String line : lines) {
-        if (line.startsWith("t:")) {
-          // new topic
-          topic = line.substring(2);
-        } else if (line.startsWith("v:")) {
-          String[] rawDataArray = line.split("\\s+");
-
-          String versionText = "N/A";
-          String encryptionKeyName = null;
-          String encodedKey = null;
-          String expiredAtText = null;
-
-          for (String rawData : rawDataArray) {
-            if (rawData.startsWith("v:")) {
-              versionText = rawData.substring(2);
-            } else if (rawData.startsWith("kn:")) {
-              encryptionKeyName = rawData.substring(3);
-            } else if (rawData.startsWith("ek:")) {
-              encodedKey = rawData.substring(3);
-            } else if (rawData.startsWith("ex:")) {
-              expiredAtText = rawData.substring(3);
-            } else {
-              log.debug("Ignore entry {} in cache line: {}", rawData, line);
-            }
-          }
-
-          cacheEntries.add(new CacheEntry(topic, Integer.parseInt(versionText),
-              encryptionKeyName, encodedKey, expiredAtText));
-        } else if (!line.equals("v1")) {
-          log.debug("Ignore cache line: {}", line);
-        }
-      }
+      cachedPayload = cacheStorage.retrieveEntry();
     } catch (Exception ex) {
       if (log.isDebugEnabled()) {
         log.debug(ex.getMessage(), ex);
@@ -338,29 +320,35 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
       }
     }
 
+    if (cachedPayload == null || cachedPayload.isEmpty()) {
+      return new ArrayList<>();
+    }
+    JsonObject jsonObjectRoot = Json.parse(cachedPayload).asObject();
+    if (jsonObjectRoot.get(NAME_ENTRIES) == null) {
+      return new ArrayList<>();
+    }
+    JsonArray jsonArrayEntries = jsonObjectRoot.get(NAME_ENTRIES).asArray();
+    List<JsonObject> cacheEntries = new ArrayList<>();
+    for (JsonValue jsonValue : jsonArrayEntries.values()) {
+      cacheEntries.add(jsonValue.asObject());
+    }
     return cacheEntries;
   }
 
-  private OffsetDateTime retrieveNewExpiredAtTimestamp() {
-    return OffsetDateTime.now(clock)
-        .withOffsetSameInstant(ZoneOffset.UTC)
-        .plus(cachingDuration);
+  private Comparator<JsonObject> sortByVersion() {
+    return Comparator.comparingInt(entry -> entry.getInt(NAME_VERSION));
   }
 
-  private Comparator<CacheEntry> sortByVersion() {
-    return Comparator.comparingInt(CacheEntry::version);
-  }
-
-  private Comparator<CacheEntry> noSortOrder() {
+  private Comparator<JsonObject> noSortOrder() {
     return Comparator.comparingInt(entry -> 0);
   }
 
-  private CacheEntry findAtMostOneEntry(List<CacheEntry> values,
-      Predicate<CacheEntry> filter,
-      Comparator<CacheEntry> comparator) {
-    CacheEntry currentBestValue = null;
-    List<CacheEntry> matchingCurrentBestValues = new ArrayList<>();
-    for (CacheEntry singleValue : values) {
+  private JsonObject findAtMostOneEntry(List<JsonObject> values,
+      Predicate<JsonObject> filter,
+      Comparator<JsonObject> comparator) {
+    JsonObject currentBestValue = null;
+    List<JsonObject> matchingCurrentBestValues = new ArrayList<>();
+    for (JsonObject singleValue : values) {
       if (!filter.test(singleValue)) {
         // singleValue does not match the given filter
         continue;
@@ -388,118 +376,6 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
     }
 
     return currentBestValue;
-  }
-
-  private static class CacheEntry {
-
-    private final String topic;
-    private final int version;
-    private final String encryptionKeyName;
-    private final String encodedKey;
-    private String expiredAtText;
-
-    CacheEntry(String topic, int version, String encryptionKeyName, String encodedKey,
-        String expiredAtText) {
-      this.topic = Objects.requireNonNull(topic, "topic");
-      this.version = version;
-      this.encryptionKeyName = encryptionKeyName;
-      this.encodedKey = Objects.requireNonNull(encodedKey, "encodedKey");
-      this.expiredAtText = expiredAtText;
-    }
-
-    public static CacheEntry forDecryption(String topic, KeyVersion keyVersion,
-        OffsetDateTime expiredAt) {
-      return new CacheEntry(topic, keyVersion.version(), keyVersion.encryptionKeyAttributeName(),
-          keyVersion.encodedKey(), expiredAt.format(DTF));
-    }
-
-    public static CacheEntry forEncryption(String topic, int version, String encodedKey) {
-      return new CacheEntry(topic, version, null, encodedKey, null);
-    }
-
-    public static CacheEntry forEncryptionWithKeyName(String topic, int version,
-        String encryptionKeyName,
-        String encodedKey) {
-      return new CacheEntry(topic, version, encryptionKeyName, encodedKey, null);
-    }
-
-    String topic() {
-      return topic;
-    }
-
-    int version() {
-      return version;
-    }
-
-    boolean hasEncryptionKeyName() {
-      return encryptionKeyName != null;
-    }
-
-    String encryptionKeyName() {
-      return encryptionKeyName;
-    }
-
-    String encodedKey() {
-      return encodedKey;
-    }
-
-    boolean hasExpiredAt() {
-      return expiredAtText != null;
-    }
-
-    String expiredAtText() {
-      return expiredAtText;
-    }
-
-    OffsetDateTime expiredAtOffsetDateTime() {
-      Objects.requireNonNull(expiredAtText, "expiredAtText");
-      return OffsetDateTime.parse(expiredAtText, DTF);
-    }
-
-    void updateExpiredAt(OffsetDateTime newExpiredAt) {
-      this.expiredAtText = newExpiredAt.format(DTF);
-    }
-
-    @Override
-    public String toString() {
-      return "CacheEntry{" + topic + ", version=" + version
-          + (encryptionKeyName == null ? "" : ", encryptionKeyName='" + encryptionKeyName + '\'')
-          + (expiredAtText == null ? "" : ", expiredAtText='" + expiredAtText + '\'')
-          + ", encodedKey='" + encodedKey + '\''
-          + '}';
-    }
-
-    public int compare(CacheEntry other) {
-      int comp = compareString(this.topic, other.topic);
-      if (comp != 0) {
-        return comp;
-      }
-
-      comp = Integer.compare(this.version, other.version);
-      if (comp != 0) {
-        return -1 * comp;
-      }
-
-      comp = compareString(this.encryptionKeyName, other.encryptionKeyName);
-      if (comp != 0) {
-        return comp;
-      }
-
-      return compareString(this.expiredAtText, other.expiredAtText);
-    }
-
-    private static int compareString(String a, String b) {
-      if (a != null && b != null) {
-        return a.compareTo(b);
-      }
-      if (a == null && b != null) {
-        return 1;
-      }
-      if (a != null) {
-        return -1;
-      }
-      return 0;
-    }
   }
 
   /**

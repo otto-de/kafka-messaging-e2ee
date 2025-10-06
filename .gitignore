@@ -17,5 +17,5 @@ out/
 ## ignore logfiles
 **/logs
 ## ignore local file caches
-**/vaultCache.txt
+**/vaultCache.json
 

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class VaultFileCacheStorage implements SecondLevelCacheStorage {
 
-  private static final String fileName = "vaultCache.txt";
+  private static final String fileName = "vaultCache.json";
 
   @Override
   public void storeEntry(String payload) {
