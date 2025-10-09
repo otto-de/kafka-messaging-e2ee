@@ -288,6 +288,7 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
         jsonTopicEntriesArray = new JsonArray();
         jsonTopicObject.add(NAME_V2_ENTRIES, jsonTopicEntriesArray);
         jsonTopicsArray.add(jsonTopicObject);
+        lastTopic = currentTopic;
       }
 
       JsonObject jsonEntryObject = new JsonObject();
@@ -336,13 +337,54 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
       }
     }
 
-    if (cachedPayload == null || cachedPayload.isEmpty()) {
+    if (cachedPayload == null || cachedPayload.isEmpty() || "{}".equals(cachedPayload)) {
       return new ArrayList<>();
     }
     JsonObject jsonObjectRoot = Json.parse(cachedPayload).asObject();
 
-    // TODO
-    return loadCacheEntriesV1(jsonObjectRoot);
+    int formatVersion = jsonObjectRoot.getInt(NAME_VERSION, 1);
+    if (formatVersion == 2) {
+      return loadCacheEntriesV2(jsonObjectRoot);
+    } else if (formatVersion == 1) {
+      return loadCacheEntriesV1(jsonObjectRoot);
+    }
+
+    // unknown cache version, so just ignore the data
+    return new ArrayList<>();
+  }
+
+  private List<CacheEntry> loadCacheEntriesV2(JsonObject jsonObjectRoot) {
+    List<CacheEntry> cacheEntries = new ArrayList<>();
+
+    JsonValue jsonTopicsObject = jsonObjectRoot.get(NAME_V2_TOPICS);
+    if (jsonTopicsObject == null) {
+      return cacheEntries;
+    }
+    JsonArray jsonTopicEntriesArray = jsonTopicsObject.asArray();
+    for (JsonValue jsonTopicValue : jsonTopicEntriesArray) {
+      JsonObject jsonTopicObject = jsonTopicValue.asObject();
+      JsonValue jsonSingleTopicValue = jsonTopicObject.get(NAME_V2_TOPIC);
+      JsonValue jsonTopicEntriesValue = jsonTopicObject.get(NAME_V2_ENTRIES);
+      if (jsonSingleTopicValue == null || jsonTopicEntriesValue == null) {
+        continue;
+      }
+      String topic = jsonSingleTopicValue.asString();
+      for (JsonValue jsonTopicEntryValue : jsonTopicEntriesValue.asArray()) {
+        JsonObject jsonTopicEntryObject = jsonTopicEntryValue.asObject();
+        int version = jsonTopicEntryObject.getInt(NAME_V2_VERSION, 0);
+        String encryptionKeyAttributeName = jsonTopicEntryObject
+            .getString(NAME_V2_ENCRYPTION_KEY_ATTRIBUTE_NAME);
+        String encodedKey = jsonTopicEntryObject.getString(NAME_V2_ENCODED_KEY);
+        String expiredAtText = jsonTopicEntryObject.getString(NAME_V2_EXPIRE_AT);
+
+        CacheEntry cacheEntry = new CacheEntry(topic, version, encryptionKeyAttributeName,
+            encodedKey,
+            expiredAtText);
+        cacheEntries.add(cacheEntry);
+      }
+    }
+
+    return cacheEntries;
   }
 
   private List<CacheEntry> loadCacheEntriesV1(JsonObject jsonObjectRoot) {
