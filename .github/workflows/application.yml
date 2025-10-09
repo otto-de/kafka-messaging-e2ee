@@ -49,7 +49,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Semantic Release
-        uses: cycjimmy/semantic-release-action@v5.0.0
+        uses: cycjimmy/semantic-release-action@v5.0.1
         id: semantic # Need an id for output parameters
         with:
           semantic_version: 24.2.1
