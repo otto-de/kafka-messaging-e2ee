@@ -1,5 +1,5 @@
 [versions]
-dockerComposePlugInVersion = "0.17.13"
+dockerComposePlugInVersion = "0.17.17"
 springBootPlugInVersion = "3.5.6"
 springDependencyManagementPlugInVersion = "1.1.7"
 
