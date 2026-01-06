@@ -27,7 +27,7 @@ jobs:
           java-version: '17'
       - name: Run Unit Tests
         run: ./gradlew clean test
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         if: failure()
         with:
           name: test-results
@@ -49,7 +49,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Semantic Release
-        uses: cycjimmy/semantic-release-action@v5.0.0
+        uses: cycjimmy/semantic-release-action@v6.0.0
         id: semantic # Need an id for output parameters
         with:
           semantic_version: 24.2.1
