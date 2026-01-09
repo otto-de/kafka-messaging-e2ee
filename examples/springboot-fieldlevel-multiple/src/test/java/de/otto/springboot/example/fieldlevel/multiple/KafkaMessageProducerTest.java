@@ -5,8 +5,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.otto.kafka.messaging.e2ee.EncryptionKeyProvider;
 import de.otto.kafka.messaging.e2ee.EncryptionKeyProvider.KeyVersion;
 import de.otto.kafka.messaging.e2ee.EncryptionService;
@@ -23,6 +21,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 @ExtendWith(MockitoExtension.class)
 class KafkaMessageProducerTest {
@@ -41,7 +41,7 @@ class KafkaMessageProducerTest {
   void setup() {
     Clock clock = Clock.fixed(OffsetDateTime.parse("2023-09-12T18:02:37.668221Z").toInstant(),
         ZoneId.of("UTC"));
-    ObjectMapper objectMapper = new ObjectMapper();
+    JsonMapper objectMapper = JsonMapper.builder().build();
     FieldLevelEncryptionService fieldLevelEncryptionService = new FieldLevelEncryptionService(
         new EncryptionService(encryptionKeyProvider, initializationVectorFactory));
     messageProducer = new KafkaMessageProducer(clock, kafkaTemplate, fieldLevelEncryptionService,
@@ -49,7 +49,7 @@ class KafkaMessageProducerTest {
   }
 
   @Test
-  void shouldCreateEncryptedData() throws JsonProcessingException {
+  void shouldCreateEncryptedData() throws JacksonException {
     // given: a valid encryption key and initialization vector
     when(encryptionKeyProvider.retrieveKeyForEncryption(eq(TOPIC_NAME)))
         .thenReturn(new KeyVersion(37, "fYpQkfYkdgLBpbMAqfoHxzFvB03Liy4XpvWznmCgmSg%3D%0A"));

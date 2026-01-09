@@ -6,7 +6,6 @@ plugins {
 
 group = 'de.otto.kafka.messaging.e2ee.examples'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '21'
 
 configurations {
     compileOnly {
@@ -31,6 +30,12 @@ dependencies {
 
     // include our kafka-messaging-e2ee lib (run "./gradlew publishToMavenLocal" beforehand)
     implementation libs.kafka.e2ee
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
 }
 
 tasks.named('test') {
