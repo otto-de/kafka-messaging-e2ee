@@ -2,8 +2,8 @@ package de.otto.springboot.example.fieldlevel.multiple;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 import de.otto.kafka.messaging.e2ee.fieldlevel.FieldLevelDecryptionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -19,12 +19,12 @@ public class KafkaListenerTopicThree {
 
   private final FieldLevelDecryptionService decryptionService;
   private final SomeBusinessService someBusinessService;
-  private final ObjectMapper objectMapper;
+  private final JsonMapper objectMapper;
 
   public KafkaListenerTopicThree(
       FieldLevelDecryptionService decryptionService,
       SomeBusinessService someBusinessService,
-      ObjectMapper objectMapper) {
+      JsonMapper objectMapper) {
     this.decryptionService = decryptionService;
     this.someBusinessService = someBusinessService;
     this.objectMapper = objectMapper;
@@ -33,7 +33,7 @@ public class KafkaListenerTopicThree {
   @KafkaListener(topics = {"${app.topic.three.name}"})
   public void onMessage(
       @Payload(required = false) String payload,
-      @Header(name = "kafka_receivedTopic") String kafkaTopicName) throws JsonProcessingException {
+      @Header(name = "kafka_receivedTopic") String kafkaTopicName) throws JacksonException {
 
     // parse payload
     DataJsonDto dataJsonDto = objectMapper.readValue(payload, DataJsonDto.class);

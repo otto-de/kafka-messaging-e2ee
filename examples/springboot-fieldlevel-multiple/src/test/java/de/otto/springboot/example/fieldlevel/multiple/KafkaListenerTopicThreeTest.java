@@ -6,8 +6,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 import de.otto.kafka.messaging.e2ee.EncryptionKeyProvider;
 import de.otto.kafka.messaging.e2ee.fieldlevel.FieldLevelDecryptionService;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,13 +31,13 @@ class KafkaListenerTopicThreeTest {
   void setup() {
     FieldLevelDecryptionService fieldLevelDecryptionService = new FieldLevelDecryptionService(
         encryptionKeyProvider);
-    ObjectMapper objectMapper = new ObjectMapper();
+    JsonMapper objectMapper = JsonMapper.builder().build();
     kafkaListener = new KafkaListenerTopicThree(fieldLevelDecryptionService, someBusinessService,
         objectMapper);
   }
 
   @Test
-  void shouldDoSomethingWhenValueIsNotEncrypted() throws JsonProcessingException {
+  void shouldDoSomethingWhenValueIsNotEncrypted() throws JacksonException {
     // given: a valid kafka event
     String event = """
         {
@@ -55,7 +55,7 @@ class KafkaListenerTopicThreeTest {
   }
 
   @Test
-  void shouldDoSomethingWhenValueIsEncrypted() throws JsonProcessingException {
+  void shouldDoSomethingWhenValueIsEncrypted() throws JacksonException {
     // given: a valid kafka event
     String event = """
         {
