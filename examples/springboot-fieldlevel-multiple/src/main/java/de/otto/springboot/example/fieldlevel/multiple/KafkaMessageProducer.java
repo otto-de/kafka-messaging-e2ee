@@ -1,8 +1,6 @@
 package de.otto.springboot.example.fieldlevel.multiple;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.otto.kafka.messaging.e2ee.fieldlevel.FieldLevelEncryptionService;
 import de.otto.kafka.messaging.e2ee.fieldlevel.SingleTopicFieldLevelEncryptionService;
 import java.time.Clock;
@@ -17,6 +15,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 @Slf4j
 @Component
@@ -27,14 +27,14 @@ public class KafkaMessageProducer {
   private final KafkaTemplate<String, String> kafkaTemplate;
   private final SingleTopicFieldLevelEncryptionService encryptionService;
   private final String topicThreeName;
-  private final ObjectMapper objectMapper;
+  private final JsonMapper objectMapper;
 
   public KafkaMessageProducer(
       Clock clock,
       KafkaTemplate<String, String> kafkaTemplate,
       FieldLevelEncryptionService encryptionService,
       @Value("${app.topic.three.name}") String topicThreeName,
-      ObjectMapper objectMapper) {
+      JsonMapper objectMapper) {
     this.clock = clock;
     this.kafkaTemplate = kafkaTemplate;
     this.encryptionService = new SingleTopicFieldLevelEncryptionService(encryptionService,
@@ -44,7 +44,7 @@ public class KafkaMessageProducer {
   }
 
   @Scheduled(fixedDelay = 13, initialDelay = 10, timeUnit = TimeUnit.SECONDS)
-  public void onTickTopicThree() throws JsonProcessingException {
+  public void onTickTopicThree() throws JacksonException {
     String msgPlain =
         "Some TopicThree my data at " + LocalTime.now(clock)
             .format(DateTimeFormatter.ISO_LOCAL_TIME)
