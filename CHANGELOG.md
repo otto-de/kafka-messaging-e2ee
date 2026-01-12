@@ -1,3 +1,10 @@
+## [2.3.2](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.3.1...v2.3.2) (2026-01-12)
+
+
+### Bug Fixes
+
+* **springBoot:** update springBootVersion from 3.5.7 to 4.0.0 ([#79](https://github.com/otto-de/kafka-messaging-e2ee/issues/79)) ([86eb15d](https://github.com/otto-de/kafka-messaging-e2ee/commit/86eb15d72cf5616d6fe94066fa59ae309aecd88b))
+
 ## [2.3.1](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.3.0...v2.3.1) (2025-09-23)
 
 
