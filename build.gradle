@@ -13,9 +13,16 @@ repositories {
     mavenCentral()
 }
 
+java {
+    toolchain {
+        // use java 25 to compile the project
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
 compileJava {
-    sourceCompatibility = 17
-    targetCompatibility = 17
+    // ensure output is compatible with java 17
+    options.release = 17
     // log details of usage of deprecated members or classes.
     options.deprecation = true
 }

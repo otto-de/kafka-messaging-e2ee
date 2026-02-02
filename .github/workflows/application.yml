@@ -24,7 +24,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '25'
       - name: Run Unit Tests
         run: ./gradlew clean test
       - uses: actions/upload-artifact@v6

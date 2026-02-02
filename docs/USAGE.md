@@ -12,7 +12,7 @@
 
 ```groovy
 dependencies {
-    implementation "de.otto:kafka-messaging-e2ee:2.3.2"
+    implementation "de.otto:kafka-messaging-e2ee:3.0.0"
 }
 ```
 
@@ -130,8 +130,6 @@ class Example {
     // metadata attributes for Kafka Headers (values can be String or byte[])
     String kafkaTopicName = "some-topic";
     Map<String, Object> kafkaHeaders = new HashMap<>();
-    kafkaHeaders.put(KafkaEncryptionHelper.KAFKA_HEADER_IV_VALUE, "2rW2tDnRdwRg87Ta");
-    kafkaHeaders.put(KafkaEncryptionHelper.KAFKA_HEADER_CIPHER_VALUE, "[{\"encryption_key\":{\"cipherVersionString\":null,\"cipherVersion\":3,\"cipherName\":\"encryption_key\"}}]");
     kafkaHeaders.put(KafkaEncryptionHelper.KAFKA_CE_HEADER_IV_VALUE, "2rW2tDnRdwRg87Ta");
     kafkaHeaders.put(KafkaEncryptionHelper.KAFKA_CE_HEADER_CIPHER_VERSION_VALUE, "3");
     kafkaHeaders.put(KafkaEncryptionHelper.KAFKA_CE_HEADER_CIPHER_NAME_VALUE, "encryption_key");
@@ -158,8 +156,6 @@ class Example {
   void example() {
     // meta data attributes for Kafka Headers
     String kafkaTopicName = "some-topic";
-    byte[] kafkaHeaderInitializationVector = kafkaHeaders.get(KafkaEncryptionHelper.KAFKA_HEADER_IV_VALUE);
-    byte[] kafkaHeaderCiphersText = kafkaHeaders.get(KafkaEncryptionHelper.KAFKA_HEADER_CIPHER_VALUE);
     byte[] kafkaCeHeaderInitializationVector = kafkaHeaders.get(KafkaEncryptionHelper.KAFKA_CE_HEADER_IV_VALUE);
     byte[] kafkaCeHeaderCipherVersion = kafkaHeaders.get(KafkaEncryptionHelper.KAFKA_CE_HEADER_CIPHER_VERSION_VALUE);
     byte[] kafkaCeHeaderCipherName = kafkaHeaders.get(KafkaEncryptionHelper.KAFKA_CE_HEADER_CIPHER_NAME_VALUE);
@@ -169,7 +165,7 @@ class Example {
 
     // perform decryption
     AesEncryptedPayload encryptedPayload = KafkaEncryptionHelper.aesEncryptedPayloadOfKafka(
-        encryptedPayloadByteArray, kafkaHeaderInitializationVector, kafkaHeaderCiphersText,
+        encryptedPayloadByteArray,
         kafkaCeHeaderInitializationVector, kafkaCeHeaderCipherVersion, kafkaCeHeaderCipherName
     );
     String plainText = decryptionService.decryptToString(kafkaTopicName, encryptedPayload);

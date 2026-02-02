@@ -3,8 +3,6 @@ package de.otto.springboot.example.multiple;
 import static de.otto.kafka.messaging.e2ee.KafkaEncryptionHelper.KAFKA_CE_HEADER_CIPHER_NAME_VALUE;
 import static de.otto.kafka.messaging.e2ee.KafkaEncryptionHelper.KAFKA_CE_HEADER_CIPHER_VERSION_VALUE;
 import static de.otto.kafka.messaging.e2ee.KafkaEncryptionHelper.KAFKA_CE_HEADER_IV_VALUE;
-import static de.otto.kafka.messaging.e2ee.KafkaEncryptionHelper.KAFKA_HEADER_CIPHER_VALUE;
-import static de.otto.kafka.messaging.e2ee.KafkaEncryptionHelper.KAFKA_HEADER_IV_VALUE;
 
 import de.otto.kafka.messaging.e2ee.AesEncryptedPayload;
 import de.otto.kafka.messaging.e2ee.DecryptionService;
@@ -31,8 +29,6 @@ public class KafkaListenerTopicThree {
   public void onMessage(
       @Payload(required = false) byte[] payload,
       @Header(name = "kafka_receivedTopic") String kafkaTopicName,
-      @Header(required = false, name = KAFKA_HEADER_IV_VALUE) byte[] ivRaw,
-      @Header(required = false, name = KAFKA_HEADER_CIPHER_VALUE) byte[] cipherConfigRaw,
       @Header(required = false, name = KAFKA_CE_HEADER_IV_VALUE) byte[] ceIvRaw,
       @Header(required = false, name = KAFKA_CE_HEADER_CIPHER_VERSION_VALUE) byte[] cipherVersionRaw,
       @Header(required = false, name = KAFKA_CE_HEADER_CIPHER_NAME_VALUE) byte[] cipherNameRaw
@@ -40,7 +36,7 @@ public class KafkaListenerTopicThree {
 
     // decrypt incoming event
     AesEncryptedPayload encryptedPayload = KafkaEncryptionHelper.aesEncryptedPayloadOfKafka(payload,
-        ivRaw, cipherConfigRaw, ceIvRaw, cipherVersionRaw, cipherNameRaw);
+        ceIvRaw, cipherVersionRaw, cipherNameRaw);
     String plainEvent = decryptionService.decryptToString(kafkaTopicName, encryptedPayload);
 
     String messageWasEncryptedTxt;

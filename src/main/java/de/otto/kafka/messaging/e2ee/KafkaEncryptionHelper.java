@@ -1,13 +1,7 @@
 package de.otto.kafka.messaging.e2ee;
 
 import de.otto.kafka.messaging.e2ee.vault.VaultEncryptionKeyProviderConfig;
-import io.github.jopenlibs.vault.json.Json;
-import io.github.jopenlibs.vault.json.JsonArray;
-import io.github.jopenlibs.vault.json.JsonObject;
-import io.github.jopenlibs.vault.json.WriterConfig;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,26 +10,9 @@ import java.util.Map;
 public interface KafkaEncryptionHelper {
 
   /**
-   * Name of Kafka Header for the initialization vector for the partition key
-   */
-  String KAFKA_HEADER_IV_KEY = "encryption/key/iv";
-  /**
-   * Name of Kafka Header for the initialization vector for the payload (or value)
-   */
-  String KAFKA_HEADER_IV_VALUE = "encryption/iv";
-  /**
    * Name of Kafka CloudEvent Header for the initialization vector for the payload (or value)
    */
   String KAFKA_CE_HEADER_IV_VALUE = "ce_e2eeiv";
-
-  /**
-   * Name of Kafka Header for the cipher metadata for the partition key
-   */
-  String KAFKA_HEADER_CIPHER_KEY = "encryption/key/ciphers";
-  /**
-   * Name of Kafka Header for the cipher metadata for the payload (or value)
-   */
-  String KAFKA_HEADER_CIPHER_VALUE = "encryption/ciphers";
   /**
    * Name of Kafka CloudEvent Header for the cipher version for the payload (or value)
    */
@@ -46,67 +23,9 @@ public interface KafkaEncryptionHelper {
   String KAFKA_CE_HEADER_CIPHER_NAME_VALUE = "ce_e2eekeyname";
 
   /**
-   * Gets the name of the kafka header for the initialization vector depending on the intended
-   * usage.
-   *
-   * @param isForKey <code>true</code> request the header name to encrypt the kafka key.
-   *                 <code>false</code> request the header name to encrypt the kafka message
-   *                 payload.
-   * @return the kafka header name
-   */
-  static String headerNameIv(boolean isForKey) {
-    if (isForKey) {
-      return KafkaEncryptionHelper.KAFKA_HEADER_IV_KEY;
-    } else {
-      return KafkaEncryptionHelper.KAFKA_HEADER_IV_VALUE;
-    }
-  }
-
-  /**
-   * Gets the name of the kafka header for the cipher depending on the intended usage.
-   *
-   * @param isForKey <code>true</code> request the header name to encrypt the kafka key.
-   *                 <code>false</code> request the header name to encrypt the kafka message
-   *                 payload.
-   * @return the kafka header name
-   */
-  static String headerNameCiphers(boolean isForKey) {
-    if (isForKey) {
-      return KafkaEncryptionHelper.KAFKA_HEADER_CIPHER_KEY;
-    } else {
-      return KafkaEncryptionHelper.KAFKA_HEADER_CIPHER_VALUE;
-    }
-  }
-
-  /**
-   * Create an AesEncryptedPayload using the kafka header values.
-   *
-   * @param encryptedPayload                the encrypted payload
-   * @param kafkaHeaderInitializationVector value of kafka header of "initialization vector"
-   * @param kafkaHeaderCiphersText          value of kafka header of "ciphers"
-   * @return a AesEncryptedPayload instance with the given values
-   * @see #aesEncryptedPayloadOfKafka(byte[], String, String, String, String, String)
-   */
-  static AesEncryptedPayload aesEncryptedPayloadOfKafka(
-      byte[] encryptedPayload,
-      String kafkaHeaderInitializationVector,
-      String kafkaHeaderCiphersText) {
-    if (kafkaHeaderInitializationVector == null || kafkaHeaderCiphersText == null) {
-      return AesEncryptedPayload.ofUnencryptedPayload(encryptedPayload);
-    }
-
-    EncryptionCipherSpec cipherSpec = extractCipherSpec(kafkaHeaderCiphersText);
-    return AesEncryptedPayload.ofEncryptedPayload(encryptedPayload,
-        kafkaHeaderInitializationVector, cipherSpec);
-  }
-
-  /**
    * Create an AesEncryptedPayload using the kafka header values.
    *
    * @param encryptedPayload                  the encrypted payload
-   * @param kafkaHeaderInitializationVector   value of deprecated kafka header of "initialization
-   *                                          vector"
-   * @param kafkaHeaderCiphersText            value of deprecated kafka header of "ciphers"
    * @param kafkaCeHeaderInitializationVector value of cloud event kafka header of "initialization
    *                                          vector"
    * @param kafkaCeHeaderCipherVersion        value of cloud event kafka header of "cipher version"
@@ -115,26 +34,15 @@ public interface KafkaEncryptionHelper {
    */
   static AesEncryptedPayload aesEncryptedPayloadOfKafka(
       byte[] encryptedPayload,
-      String kafkaHeaderInitializationVector,
-      String kafkaHeaderCiphersText,
       String kafkaCeHeaderInitializationVector,
       String kafkaCeHeaderCipherVersion,
       String kafkaCeHeaderCipherName) {
     if (kafkaCeHeaderInitializationVector != null
         && kafkaCeHeaderCipherVersion != null
         && kafkaCeHeaderCipherName != null) {
-      // prefer new cloud event kafka headers for decryption
       int cipherVersion = extractCipherVersion(kafkaCeHeaderCipherVersion);
       return AesEncryptedPayload.ofEncryptedPayload(encryptedPayload,
           kafkaCeHeaderInitializationVector, cipherVersion, kafkaCeHeaderCipherName);
-    }
-
-    if (kafkaHeaderInitializationVector != null
-        && kafkaHeaderCiphersText != null) {
-      // use deprecated kafka headers for decryption
-      EncryptionCipherSpec cipherSpec = extractCipherSpec(kafkaHeaderCiphersText);
-      return AesEncryptedPayload.ofEncryptedPayload(encryptedPayload,
-          kafkaHeaderInitializationVector, cipherSpec);
     }
 
     return AesEncryptedPayload.ofUnencryptedPayload(encryptedPayload);
@@ -143,85 +51,43 @@ public interface KafkaEncryptionHelper {
   /**
    * Create an AesEncryptedPayload using the kafka header values.
    *
-   * @param encryptedPayload                the encrypted payload
-   * @param kafkaHeaderInitializationVector value of kafka header of "initialization vector"
-   * @param kafkaHeaderCiphersText          value of kafka header of "ciphers"
-   * @return a AesEncryptedPayload instance with the given values
-   */
-  static AesEncryptedPayload aesEncryptedPayloadOfKafka(
-      byte[] encryptedPayload,
-      byte[] kafkaHeaderInitializationVector,
-      byte[] kafkaHeaderCiphersText) {
-    return aesEncryptedPayloadOfKafka(encryptedPayload,
-        byteArrayToUtf8String(kafkaHeaderInitializationVector),
-        byteArrayToUtf8String(kafkaHeaderCiphersText));
-  }
-
-  /**
-   * Create an AesEncryptedPayload using the kafka header values.
-   *
    * @param encryptedPayload                  the encrypted payload
-   * @param kafkaHeaderInitializationVector   value of kafka header of "initialization vector"
-   * @param kafkaHeaderCiphersText            value of kafka header of "ciphers"
    * @param kafkaCeHeaderInitializationVector value of kafka header of "ce_e2eeiv"
    * @param kafkaCeHeaderCipherName           value of kafka header of "ce_e2eekeyname"
    * @param kafkaCeHeaderCipherVersion        value of kafka header of "ce_e2eekeyversion"
    * @return a AesEncryptedPayload instance with the given values
-   * @see #aesEncryptedPayloadOfKafka(byte[], byte[], byte[], byte[], byte[], byte[])
+   * @see #aesEncryptedPayloadOfKafka(byte[], byte[], byte[], byte[])
    */
   static AesEncryptedPayload aesEncryptedPayloadOfKafka(
       byte[] encryptedPayload,
-      byte[] kafkaHeaderInitializationVector,
-      byte[] kafkaHeaderCiphersText,
       byte[] kafkaCeHeaderInitializationVector,
       byte[] kafkaCeHeaderCipherVersion,
       byte[] kafkaCeHeaderCipherName) {
-    return aesEncryptedPayloadOfKafka(encryptedPayload,
-        byteArrayToUtf8String(kafkaHeaderInitializationVector),
-        byteArrayToUtf8String(kafkaHeaderCiphersText),
-        byteArrayToUtf8String(kafkaCeHeaderInitializationVector),
-        byteArrayToUtf8String(kafkaCeHeaderCipherVersion),
-        byteArrayToUtf8String(kafkaCeHeaderCipherName));
+    if (kafkaCeHeaderInitializationVector != null
+        && kafkaCeHeaderCipherVersion != null
+        && kafkaCeHeaderCipherName != null) {
+      int cipherVersion = extractCipherVersion(kafkaCeHeaderCipherVersion);
+      return AesEncryptedPayload.ofEncryptedPayload(encryptedPayload,
+          byteArrayToUtf8String(kafkaCeHeaderInitializationVector),
+          cipherVersion,
+          byteArrayToUtf8String(kafkaCeHeaderCipherName));
+    }
+
+    return AesEncryptedPayload.ofUnencryptedPayload(encryptedPayload);
   }
 
   /**
    * Creates AesEncryptedPayload for a potentially encrypted event.
    *
    * @param encryptedPayload the encrypted payload
-   * @param kafkaHeaders     all kafka headers including "initialization vector" and "ciphers"
-   * @return a AesEncryptedPayload instance with the given values to represent an encrypted kafka
-   * key
-   * @see #aesEncryptedPayloadOfKafkaForValue(byte[], Map)
-   */
-  static AesEncryptedPayload aesEncryptedPayloadOfKafkaForKey(
-      byte[] encryptedPayload,
-      Map<String, ?> kafkaHeaders) {
-    String kafkaHeaderInitializationVector = extractKafkaHeaderValueText(kafkaHeaders,
-        headerNameIv(true));
-    String kafkaHeaderCiphersText = extractKafkaHeaderValueText(kafkaHeaders,
-        headerNameCiphers(true));
-    return aesEncryptedPayloadOfKafka(encryptedPayload, kafkaHeaderInitializationVector,
-        kafkaHeaderCiphersText);
-  }
-
-  /**
-   * Creates AesEncryptedPayload for a potentially encrypted event.
-   *
-   * @param encryptedPayload the encrypted payload
-   * @param kafkaHeaders     all kafka headers including "initialization vector" and "ciphers"
+   * @param kafkaHeaders     all kafka headers including "ce_e2eeiv", "ce_e2eekeyversion" and
+   *                         "ce_e2eekeyname"
    * @return a AesEncryptedPayload instance with the given values to represent an encrypted kafka
    * value a.k.a. payload
-   * @see #aesEncryptedPayloadOfKafkaForKey(byte[], Map)
    */
   static AesEncryptedPayload aesEncryptedPayloadOfKafkaForValue(
       byte[] encryptedPayload,
       Map<String, ?> kafkaHeaders) {
-    // read deprecated kafka headers
-    String kafkaHeaderInitializationVector = extractKafkaHeaderValueText(kafkaHeaders,
-        headerNameIv(false));
-    String kafkaHeaderCiphersText = extractKafkaHeaderValueText(kafkaHeaders,
-        headerNameCiphers(false));
-
     // read CloudEvent kafka headers
     String kafkaCeHeaderInitializationVector = extractKafkaHeaderValueText(kafkaHeaders,
         KAFKA_CE_HEADER_IV_VALUE);
@@ -230,9 +96,8 @@ public interface KafkaEncryptionHelper {
     String kafkaCeHeaderCipherName = extractKafkaHeaderValueText(kafkaHeaders,
         KAFKA_CE_HEADER_CIPHER_NAME_VALUE);
 
-    return aesEncryptedPayloadOfKafka(encryptedPayload, kafkaHeaderInitializationVector,
-        kafkaHeaderCiphersText, kafkaCeHeaderInitializationVector, kafkaCeHeaderCipherVersion,
-        kafkaCeHeaderCipherName);
+    return aesEncryptedPayloadOfKafka(encryptedPayload, kafkaCeHeaderInitializationVector,
+        kafkaCeHeaderCipherVersion, kafkaCeHeaderCipherName);
   }
 
   /**
@@ -255,248 +120,6 @@ public interface KafkaEncryptionHelper {
     }
 
     return value.toString();
-  }
-
-  /**
-   * Converts a byte-array to a String assuming UTF-8 encoding.
-   *
-   * @param kafkaHeaderValue a Kafka header value as raw byte array or <code>null</code>
-   * @return the header value as String can be <code>null</code>
-   */
-  static String byteArrayToUtf8String(byte[] kafkaHeaderValue) {
-    if (kafkaHeaderValue == null) {
-      return null;
-    }
-    return new String(kafkaHeaderValue, StandardCharsets.UTF_8);
-  }
-
-  /**
-   * Builds a map containing all required encryption headers if the partition key is encrypted.
-   *
-   * @param encryptedPayload a AesEncryptedPayload object for a Kafka key
-   * @return the kafka headers needed for given AesEncryptedPayload
-   * @see #mapToKafkaHeadersForValue(AesEncryptedPayload)
-   */
-  static Map<String, byte[]> mapToKafkaHeadersForKey(AesEncryptedPayload encryptedPayload) {
-    if (encryptedPayload.isEncrypted()) {
-      return Map.of(
-          headerNameIv(true), mapToIvHeaderValue(encryptedPayload),
-          headerNameCiphers(true), mapToCipherHeaderValue(encryptedPayload));
-    }
-    return Map.of();
-  }
-
-  /**
-   * Builds a map containing all required encryption headers for an encrypted event.
-   *
-   * @param encryptedPayload a AesEncryptedPayload object for a Kafka value a.k.a. payload
-   * @return the kafka headers needed for given AesEncryptedPayload
-   * @see #mapToKafkaHeadersForValue(AesEncryptedPayload)
-   */
-  static Map<String, byte[]> mapToKafkaHeadersForValue(AesEncryptedPayload encryptedPayload) {
-    if (encryptedPayload.isEncrypted()) {
-      return Map.of(
-          // add deprecated kafka headers
-          headerNameIv(false), mapToIvHeaderValue(encryptedPayload),
-          headerNameCiphers(false), mapToCipherHeaderValue(encryptedPayload),
-          // add CloudEvent kafka headers
-          KAFKA_CE_HEADER_IV_VALUE, mapToIvHeaderValue(encryptedPayload),
-          KAFKA_CE_HEADER_CIPHER_VERSION_VALUE, mapToCipherVersionHeaderValue(encryptedPayload),
-          KAFKA_CE_HEADER_CIPHER_NAME_VALUE, mapToCipherNameHeaderValue(encryptedPayload)
-      );
-    }
-    return Map.of();
-  }
-
-  /**
-   * Extracts the initialization vector in base64 encoding.
-   *
-   * @param encryptedPayload the payload
-   * @return the value for the initialization vector. Note: you should check
-   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
-   * @see #headerNameIv(boolean)
-   */
-  static String mapToIvHeaderValueText(AesEncryptedPayload encryptedPayload) {
-    return encryptedPayload.initializationVectorBase64();
-  }
-
-  /**
-   * Extracts the initialization vector as byte-array.
-   *
-   * @param encryptedPayload the payload
-   * @return the value for the initialization vector. Note: you should check
-   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
-   * @see #headerNameIv(boolean)
-   */
-  static byte[] mapToIvHeaderValue(AesEncryptedPayload encryptedPayload) {
-    if (encryptedPayload.isEncrypted()) {
-      return mapToIvHeaderValueText(encryptedPayload)
-          .getBytes(StandardCharsets.UTF_8);
-    }
-    throw new IllegalArgumentException(
-        "Cannot call 'mapToIvHeaderValue' for unencrypted payloads.");
-  }
-
-  /**
-   * Build the cipher header value.
-   *
-   * @param encryptedPayload the payload
-   * @return the value for the cipher metadata. Note: you should check
-   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
-   * @see #headerNameCiphers(boolean)
-   */
-  static String mapToCipherHeaderValueText(AesEncryptedPayload encryptedPayload) {
-    String encryptionKeyName = encryptedPayload.encryptionKeyAttributeName();
-    if (encryptionKeyName == null) {
-      encryptionKeyName = VaultEncryptionKeyProviderConfig.DEFAULT_ENCRYPTION_KEY_ATTRIBUTE_NAME;
-    }
-
-    JsonObject jsonObjectCipher = new JsonObject();
-    jsonObjectCipher.add("cipherVersion", Json.value(encryptedPayload.keyVersion()));
-    jsonObjectCipher.add("cipherVersionString", Json.NULL);
-    jsonObjectCipher.add("cipherName", Json.value(encryptionKeyName));
-    JsonObject jsonObjectEncryption = new JsonObject();
-    jsonObjectEncryption.add(encryptionKeyName, jsonObjectCipher);
-    JsonArray jsonArrayRoot = new JsonArray();
-    jsonArrayRoot.add(jsonObjectEncryption);
-
-    return jsonArrayRoot.toString(WriterConfig.MINIMAL);
-  }
-
-  /**
-   * Build the cipher header value.
-   *
-   * @param cipherSpec the cipher spec
-   * @return the value for the cipher metadata.
-   * @see #headerNameCiphers(boolean)
-   */
-  static String mapToCipherHeaderValueText(EncryptionCipherSpec cipherSpec) {
-    String encryptionKeyName = cipherSpec.cipherName();
-    if (encryptionKeyName == null) {
-      encryptionKeyName = VaultEncryptionKeyProviderConfig.DEFAULT_ENCRYPTION_KEY_ATTRIBUTE_NAME;
-    }
-
-    JsonObject jsonObjectCipher = new JsonObject();
-    jsonObjectCipher.add("cipherVersion", Json.value(cipherSpec.keyVersion()));
-    jsonObjectCipher.add("cipherVersionString", Json.NULL);
-    jsonObjectCipher.add("cipherName", Json.value(encryptionKeyName));
-    JsonObject jsonObjectEncryption = new JsonObject();
-    jsonObjectEncryption.add(encryptionKeyName, jsonObjectCipher);
-    JsonArray jsonArrayRoot = new JsonArray();
-    jsonArrayRoot.add(jsonObjectEncryption);
-
-    return jsonArrayRoot.toString(WriterConfig.MINIMAL);
-  }
-
-  /**
-   * Build the cipher name header value as byte-array.
-   *
-   * @param encryptedPayload the payload
-   * @return the value for the cipher name. Note: you should check
-   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
-   * @see #headerNameCiphers(boolean)
-   */
-  static byte[] mapToCipherNameHeaderValue(AesEncryptedPayload encryptedPayload) {
-    String cipherNameHeaderText = mapToCipherNameHeaderText(encryptedPayload);
-    return cipherNameHeaderText.getBytes(StandardCharsets.UTF_8);
-  }
-
-  /**
-   * Build the cipher name header value as String.
-   *
-   * @param encryptedPayload the payload
-   * @return the value for the cipher name. Note: you should check
-   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
-   * @see #headerNameCiphers(boolean)
-   */
-  static String mapToCipherNameHeaderText(AesEncryptedPayload encryptedPayload) {
-    if (encryptedPayload.isEncrypted()) {
-      String encryptionKeyName = encryptedPayload.encryptionKeyAttributeName();
-      if (encryptionKeyName == null) {
-        encryptionKeyName = VaultEncryptionKeyProviderConfig.DEFAULT_ENCRYPTION_KEY_ATTRIBUTE_NAME;
-      }
-      return encryptionKeyName;
-    }
-    throw new IllegalArgumentException(
-        "Cannot call 'mapToCipherNameHeaderText' for unencrypted payloads.");
-  }
-
-  /**
-   * Build the cipher version header value as byte-array.
-   *
-   * @param encryptedPayload the payload
-   * @return the value for the cipher version. Note: you should check
-   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
-   * @see #headerNameCiphers(boolean)
-   */
-  static byte[] mapToCipherVersionHeaderValue(AesEncryptedPayload encryptedPayload) {
-    String cipherVersionHeaderText = mapToCipherVersionHeaderText(encryptedPayload);
-    return cipherVersionHeaderText.getBytes(StandardCharsets.UTF_8);
-  }
-
-  /**
-   * Build the cipher version header value as String.
-   *
-   * @param encryptedPayload the payload
-   * @return the value for the cipher version. Note: you should check
-   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
-   * @see #headerNameCiphers(boolean)
-   */
-  static String mapToCipherVersionHeaderText(AesEncryptedPayload encryptedPayload) {
-    if (encryptedPayload.isEncrypted()) {
-      return Integer.toString(encryptedPayload.keyVersion());
-    }
-    throw new IllegalArgumentException(
-        "Cannot call 'mapToCipherVersionHeaderText' for unencrypted payloads.");
-  }
-
-  /**
-   * Build the cipher header value as byte-array.
-   *
-   * @param encryptedPayload the payload
-   * @return the value for the cipher metadata. Note: you should check
-   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
-   * @see #headerNameCiphers(boolean)
-   */
-  static byte[] mapToCipherHeaderValue(AesEncryptedPayload encryptedPayload) {
-    if (encryptedPayload.isEncrypted()) {
-      return mapToCipherHeaderValueText(encryptedPayload)
-          .getBytes(StandardCharsets.UTF_8);
-    }
-    throw new IllegalArgumentException(
-        "Cannot call 'mapToCipherHeaderValue' for unencrypted payloads.");
-  }
-
-  /**
-   * Extracts the initialization vector from the given kafka header value.
-   *
-   * @param ivRaw the raw kafka header value of the initialization vector
-   * @return the initialization vector
-   * @see #mapToIvHeaderValue(AesEncryptedPayload)
-   * @see #headerNameIv(boolean)
-   */
-  static byte[] extractIv(byte[] ivRaw) {
-    if (ivRaw == null) {
-      return new byte[]{};
-    }
-
-    return extractIv(byteArrayToUtf8String(ivRaw));
-  }
-
-  /**
-   * Extracts the initialization vector from the given kafka header value.
-   *
-   * @param ivText the kafka header value of the initialization vector in base64 encoding.
-   * @return the initialization vector
-   * @see #mapToIvHeaderValue(AesEncryptedPayload)
-   * @see #headerNameIv(boolean)
-   */
-  static byte[] extractIv(String ivText) {
-    if (ivText == null) {
-      return new byte[]{};
-    }
-
-    return Base64.getDecoder().decode(ivText);
   }
 
   /**
@@ -528,141 +151,127 @@ public interface KafkaEncryptionHelper {
   }
 
   /**
-   * Extracts the cipher name from the given kafka header value.
+   * Converts a byte-array to a String assuming UTF-8 encoding.
    *
-   * @param cipherNameCeHeaderValue the raw CloudEvent kafka header value of the cipher name.
-   * @return the key version used to encrypt the payload
+   * @param kafkaHeaderValue a Kafka header value as raw byte array or <code>null</code>
+   * @return the header value as String can be <code>null</code>
    */
-  static String extractCipherName(byte[] cipherNameCeHeaderValue) {
-    if (cipherNameCeHeaderValue == null) {
-      // not encrypted
+  static String byteArrayToUtf8String(byte[] kafkaHeaderValue) {
+    if (kafkaHeaderValue == null) {
       return null;
     }
-    return byteArrayToUtf8String(cipherNameCeHeaderValue);
+    return new String(kafkaHeaderValue, StandardCharsets.UTF_8);
   }
 
   /**
-   * Extracts the cipher name from the given kafka header value.
+   * Builds a map containing all required encryption headers for an encrypted event.
    *
-   * @param cipherNameCeHeaderValue the raw CloudEvent kafka header value of the cipher name.
-   * @return the key version used to encrypt the payload
+   * @param encryptedPayload a AesEncryptedPayload object for a Kafka value a.k.a. payload
+   * @return the kafka headers needed for given AesEncryptedPayload
+   * @see #mapToKafkaHeadersForValue(AesEncryptedPayload)
    */
-  static String extractCipherName(String cipherNameCeHeaderValue) {
-    return cipherNameCeHeaderValue;
-  }
-
-  /**
-   * Extracts the key version from the given kafka header value.
-   *
-   * @param cipherHeaderValue the raw kafka header value of the cipher metadata.
-   * @return the key version used to encrypt the payload
-   * @see #mapToCipherHeaderValue(AesEncryptedPayload)
-   * @see #headerNameCiphers(boolean)
-   */
-  static int extractKeyVersion(byte[] cipherHeaderValue) {
-    if (cipherHeaderValue == null) {
-      // not encrypted
-      return 0;
+  static Map<String, byte[]> mapToKafkaHeadersForValue(AesEncryptedPayload encryptedPayload) {
+    if (encryptedPayload.isEncrypted()) {
+      return Map.of(
+          KAFKA_CE_HEADER_IV_VALUE, mapToIvHeaderValue(encryptedPayload),
+          KAFKA_CE_HEADER_CIPHER_VERSION_VALUE, mapToCipherVersionHeaderValue(encryptedPayload),
+          KAFKA_CE_HEADER_CIPHER_NAME_VALUE, mapToCipherNameHeaderValue(encryptedPayload)
+      );
     }
-
-    return extractKeyVersion(byteArrayToUtf8String(cipherHeaderValue));
+    return Map.of();
   }
 
   /**
-   * Extracts the key version from the given kafka header value.
+   * Extracts the initialization vector as byte-array to be used in
+   * {@code KAFKA_CE_HEADER_IV_VALUE}
    *
-   * @param ciphersText the kafka header value of the cipher metadata.
-   * @return the key version used to encrypt the payload
-   * @see #mapToCipherHeaderValue(AesEncryptedPayload)
-   * @see #headerNameCiphers(boolean)
-   * @see #extractCipherSpec(String)
+   * @param encryptedPayload the payload
+   * @return the value for the initialization vector. Note: you should check
+   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
+   * @see #mapToIvHeaderValueText(AesEncryptedPayload)
    */
-  static int extractKeyVersion(String ciphersText) {
-    EncryptionCipherSpec cipherSpec = extractCipherSpec(ciphersText);
-    if (cipherSpec == null) {
-      // not encrypted
-      return 0;
+  static byte[] mapToIvHeaderValue(AesEncryptedPayload encryptedPayload) {
+    if (encryptedPayload.isEncrypted()) {
+      return mapToIvHeaderValueText(encryptedPayload)
+          .getBytes(StandardCharsets.UTF_8);
     }
-
-    return cipherSpec.keyVersion();
+    throw new IllegalArgumentException(
+        "Cannot call 'mapToIvHeaderValue' for unencrypted payloads.");
   }
 
   /**
-   * Extracts the key name from the given kafka header value.
+   * Extracts the initialization vector in base64 encoding to be used in
+   * {@code KAFKA_CE_HEADER_IV_VALUE}
    *
-   * @param ciphersText the kafka header value of the cipher metadata.
-   * @return the encryptionKeyAttributeName used to fetch the key from the vault
-   * @see #mapToCipherHeaderValue(AesEncryptedPayload)
-   * @see #headerNameCiphers(boolean)
-   * @see #extractCipherSpec(String)
+   * @param encryptedPayload the payload
+   * @return the value for the initialization vector. Note: you should check
+   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
    */
-  static String extractEncryptionKeyAttributeName(String ciphersText) {
-    EncryptionCipherSpec cipherSpec = extractCipherSpec(ciphersText);
-    if (cipherSpec == null) {
-      // not encrypted
-      return null;
-    }
-
-    return cipherSpec.cipherName();
+  static String mapToIvHeaderValueText(AesEncryptedPayload encryptedPayload) {
+    return encryptedPayload.initializationVectorBase64();
   }
 
   /**
-   * Extracts the encryption data from the given kafka header value.
+   * Build the cipher version header value as byte-array to be used in
+   * {@code KAFKA_CE_HEADER_CIPHER_VERSION_VALUE}
    *
-   * @param cipherHeaderValue the kafka header value of the cipher metadata.
-   * @return the EncryptionCipherSpec used to fetch the key from the vault
-   * @see #mapToCipherHeaderValue(AesEncryptedPayload)
-   * @see #headerNameCiphers(boolean)
+   * @param encryptedPayload the payload
+   * @return the value for the cipher version. Note: you should check
+   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
+   * @see #mapToCipherVersionHeaderText(AesEncryptedPayload)
    */
-  static EncryptionCipherSpec extractCipherSpec(byte[] cipherHeaderValue) {
-    if (cipherHeaderValue == null) {
-      // not encrypted
-      return null;
-    }
-
-    return extractCipherSpec(byteArrayToUtf8String(cipherHeaderValue));
+  static byte[] mapToCipherVersionHeaderValue(AesEncryptedPayload encryptedPayload) {
+    return mapToCipherVersionHeaderText(encryptedPayload)
+        .getBytes(StandardCharsets.UTF_8);
   }
 
   /**
-   * Extracts the encryption data from the given kafka header value.
+   * Build the cipher version header value as String to be used in
+   * {@code KAFKA_CE_HEADER_CIPHER_VERSION_VALUE}
    *
-   * @param ciphersText the kafka header value of the cipher metadata.
-   * @return the EncryptionCipherSpec used to fetch the key from the vault
-   * @see #mapToCipherHeaderValue(AesEncryptedPayload)
-   * @see #headerNameCiphers(boolean)
+   * @param encryptedPayload the payload
+   * @return the value for the cipher version. Note: you should check
+   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
    */
-  static EncryptionCipherSpec extractCipherSpec(String ciphersText) {
-    if (ciphersText == null) {
-      // not encrypted
-      return null;
+  static String mapToCipherVersionHeaderText(AesEncryptedPayload encryptedPayload) {
+    if (encryptedPayload.isEncrypted()) {
+      return Integer.toString(encryptedPayload.keyVersion());
     }
+    throw new IllegalArgumentException(
+        "Cannot call 'mapToCipherVersionHeaderText' for unencrypted payloads.");
+  }
 
-    try {
-      JsonArray jsonArrayRoot = Json.parse(ciphersText).asArray();
-      if (jsonArrayRoot.size() != 1) {
-        throw new JsonParsingRuntimeException(
-            "Cannot parse cipher. Error=CipherText has not exactly one element. Cipher="
-                + ciphersText);
+  /**
+   * Build the cipher name header value as byte-array to be used in
+   * {@code KAFKA_CE_HEADER_CIPHER_NAME_VALUE}
+   *
+   * @param encryptedPayload the payload
+   * @return the value for the cipher name. Note: you should check
+   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
+   * @see #mapToCipherNameHeaderText(AesEncryptedPayload)
+   */
+  static byte[] mapToCipherNameHeaderValue(AesEncryptedPayload encryptedPayload) {
+    return mapToCipherNameHeaderText(encryptedPayload)
+        .getBytes(StandardCharsets.UTF_8);
+  }
+
+  /**
+   * Build the cipher name header value as String to be used in
+   * {@code KAFKA_CE_HEADER_CIPHER_NAME_VALUE}
+   *
+   * @param encryptedPayload the payload
+   * @return the value for the cipher name. Note: you should check
+   * {@link AesEncryptedPayload#isEncrypted()} before calling this method.
+   */
+  static String mapToCipherNameHeaderText(AesEncryptedPayload encryptedPayload) {
+    if (encryptedPayload.isEncrypted()) {
+      String encryptionKeyName = encryptedPayload.encryptionKeyAttributeName();
+      if (encryptionKeyName == null) {
+        encryptionKeyName = VaultEncryptionKeyProviderConfig.DEFAULT_ENCRYPTION_KEY_ATTRIBUTE_NAME;
       }
-
-      JsonObject jsonObjectEncryption = jsonArrayRoot.get(0).asObject();
-      List<String> jsonElementNames = jsonObjectEncryption.names();
-      if (jsonElementNames.size() != 1) {
-        throw new JsonParsingRuntimeException(
-            "Cannot parse cipher. Error=Root object has not exactly one element. Cipher="
-                + ciphersText);
-      }
-
-      String cipherName = jsonElementNames.get(0);
-      JsonObject jsonAes = jsonObjectEncryption.get(cipherName).asObject();
-      int keyVersion = jsonAes.getInt("cipherVersion");
-
-      return new EncryptionCipherSpec(keyVersion, cipherName);
-    } catch (JsonParsingRuntimeException ex) {
-      throw ex;
-    } catch (Exception ex) {
-      throw new JsonParsingRuntimeException(
-          "Cannot parse cipher. Error=" + ex.getMessage() + " Cipher=" + ciphersText);
+      return encryptionKeyName;
     }
+    throw new IllegalArgumentException(
+        "Cannot call 'mapToCipherNameHeaderText' for unencrypted payloads.");
   }
 }

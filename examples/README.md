@@ -20,7 +20,7 @@ rm -rfv $HOME/.m2/repository/de/otto/kafka-messaging-e2ee
 
 ## update the libraries in local maven repository
 cd /repos/kafka-messaging-e2ee
-./gradlew clean publishToMavenLocal -x signMavenJavaPublication --info
+./gradlew clean publishToMavenLocal --info
 ```
 
 ### Start one of the SpringBoot services
