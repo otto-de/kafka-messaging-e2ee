@@ -1,3 +1,19 @@
+# [3.0.0](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.3.2...v3.0.0) (2026-02-02)
+
+
+### Features
+
+* **spec:** remove legacy kafka headers ([5c568dd](https://github.com/otto-de/kafka-messaging-e2ee/commit/5c568dd18b6beacbf7b6b1408b8c0ab8be05fe9a))
+
+
+### BREAKING CHANGES
+
+* **spec:** the legacy kafka headers were removed from KafkaEncryptionHelper. Theses are:
+ - KAFKA_HEADER_IV_KEY = "encryption/key/iv"
+ - KAFKA_HEADER_IV_VALUE = "encryption/iv"
+ - KAFKA_HEADER_CIPHER_KEY = "encryption/key/ciphers"
+ - KAFKA_HEADER_CIPHER_VALUE = "encryption/ciphers"
+
 ## [2.3.2](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.3.1...v2.3.2) (2026-01-12)
 
 
