@@ -96,6 +96,45 @@ class SecretManagerVaultCacheStorage implements SecondLevelCacheStorage {
 ```
 
 
-## Example for a 2nd-Level Vault Cache based on GCP Secret Manager
+## Example for a 2nd-Level Vault Cache based on GCP Secrets Manager
+```java
+import de.otto.kafka.messaging.e2ee.vault.SecondLevelCacheStorage;
 
-see: https://cloud.google.com/secret-manager/docs/create-secret-quickstart
+import com.google.cloud.secretmanager.v1.SecretManagerServiceClient;
+
+
+@Component
+class SecretManagerVaultCacheStorage implements SecondLevelCacheStorage {
+
+  private final SecretManagerServiceClient secretManagerServiceClient;
+  private final String secretId;
+  private final String gcpProjectNumber;
+
+  public SecretManagerVaultCacheStorage(
+      SecretManagerServiceClient secretManagerServiceClient,
+      @Value("${app.e2ee.vault.cache.secret.id}") String secretId,
+      @Value("${app.gcp.project.number}") String gcpProjectNumber
+  ) {
+    this.secretManagerServiceClient = secretManagerServiceClient;
+    this.secretId = secretId;
+    this.gcpProjectNumber = gcpProjectNumber;
+  }
+
+  @Override
+  public void storeEntry(String payload) {
+    SecretName secretName = SecretName.ofProjectSecretName(gcpProjectNumber, secretId);
+    SecretPayload secretPayload = SecretPayload.newBuilder()
+        .setData(ByteString.copyFrom(payload, StandardCharsets.UTF_8))
+        .build();
+    secretManagerServiceClient.addSecretVersion(secretName, secretPayload);
+  }
+
+  @Override
+  public String retrieveEntry() {
+    SecretVersionName secretVersionName = SecretVersionName.ofProjectSecretSecretVersionName(
+        gcpProjectNumber, secretId, "latest");
+    var response = secretManagerServiceClient.accessSecretVersion(secretVersionName);
+    return response.getPayload().getData().toStringUtf8();
+  }
+}
+```
