@@ -1,6 +1,6 @@
 [versions]
 dockerComposePlugInVersion = "0.17.20"
-springBootPlugInVersion = "4.0.4"
+springBootPlugInVersion = "4.0.6"
 springDependencyManagementPlugInVersion = "1.1.7"
 
 kafkaE2eeLibraryVersion = '3.0.0'
