@@ -1,6 +1,7 @@
 package de.otto.kafka.messaging.e2ee.vault;
 
 import de.otto.kafka.messaging.e2ee.vault.VaultConnectionConfig.VaultAppRole;
+import de.otto.kafka.messaging.e2ee.vault.VaultConnectionConfig.VaultAwsIamLogin;
 import io.github.jopenlibs.vault.Vault;
 import io.github.jopenlibs.vault.VaultConfig;
 import io.github.jopenlibs.vault.VaultException;
@@ -20,10 +21,29 @@ public final class RenewableVault implements ReadonlyVaultApi {
   private static final Logger log = LoggerFactory.getLogger(RenewableVault.class);
 
   private final VaultAppRole appRoleConfig;
+  private final VaultAwsIamLogin awsIamLogin;
   private Vault vault;
   private VaultConfig configAuth;
   private boolean isAuthRenewable;
   private LocalDateTime authLeaseValidUntil;
+
+  /**
+   * Constructor using App-Role authentication.
+   *
+   * @param configAuth  the configuration
+   * @param awsIamLogin the AWS IAM login configuration
+   */
+  public RenewableVault(VaultConfig configAuth, VaultAwsIamLogin awsIamLogin) {
+    Objects.requireNonNull(configAuth, "configAuth is required");
+    Objects.requireNonNull(awsIamLogin, "awsIamLogin is required");
+    this.configAuth = configAuth;
+    this.vault = Vault.create(configAuth);
+    this.isAuthRenewable = true;
+    // auth token is not valid and must be renewed at the first usage
+    this.authLeaseValidUntil = LocalDateTime.now().minusSeconds(5);
+    this.awsIamLogin = awsIamLogin;
+    this.appRoleConfig = null;
+  }
 
   /**
    * Constructor using App-Role authentication.
@@ -40,6 +60,7 @@ public final class RenewableVault implements ReadonlyVaultApi {
     // auth token is not valid and must be renewed at the first usage
     this.authLeaseValidUntil = LocalDateTime.now().minusSeconds(5);
     this.appRoleConfig = appRole;
+    this.awsIamLogin = null;
   }
 
   /**
@@ -55,6 +76,7 @@ public final class RenewableVault implements ReadonlyVaultApi {
     // basically forever
     this.authLeaseValidUntil = LocalDateTime.now().plusYears(10);
     this.appRoleConfig = null;
+    this.awsIamLogin = null;
   }
 
   @Override
@@ -71,10 +93,22 @@ public final class RenewableVault implements ReadonlyVaultApi {
 
   private void renewAuthTokenIfNeeded() throws VaultException {
     if (isAuthRenewable && LocalDateTime.now().isAfter(authLeaseValidUntil)) {
-      log.debug("Try to renew vault auth token ..");
       // renew vault
-      AuthResponse authResponse = vault.auth()
-          .loginByAppRole(appRoleConfig.path(), appRoleConfig.roleid(), appRoleConfig.secretid());
+      AuthResponse authResponse;
+      if (appRoleConfig != null) {
+        log.debug("Try to renew vault auth token using loginByAppRole() ..");
+        authResponse = vault.auth()
+            .loginByAppRole(appRoleConfig.path(), appRoleConfig.roleid(), appRoleConfig.secretid());
+      } else if (awsIamLogin != null) {
+        log.debug("Try to renew vault auth token using loginByAwsIam() ..");
+        authResponse = vault.auth()
+            .loginByAwsIam(awsIamLogin.role(), awsIamLogin.iamRequestUrlBase64(),
+                awsIamLogin.iamRequestBodyBase64(), awsIamLogin.iamRequestHeadersBase64(),
+                awsIamLogin.awsAuthMount());
+      } else {
+        authResponse = vault.auth().renewSelf();
+      }
+
       configAuth = configAuth.token(authResponse.getAuthClientToken());
       vault = Vault.create(configAuth);
       isAuthRenewable = authResponse.isAuthRenewable();

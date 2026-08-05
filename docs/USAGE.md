@@ -24,7 +24,7 @@ dependencies {
 class Example {
   void example() {
     VaultConnectionConfig vaultConnectionConfig = VaultConnectionConfig.builder()
-        // use token or appRole
+        // use token or appRole or awsIamLogin
         .token("some token")
         .build();
 
@@ -46,15 +46,12 @@ class Example {
 class Example {
   void example() {
     VaultConnectionConfig vaultConnectionConfig = VaultConnectionConfig.builder()
-        // use token or appRole
+        // use token or appRole or awsIamLogin
         .token("some token")
         .build();
 
     VaultEncryptionKeyProviderConfig vaultEncryptionKeyProviderConfig = MultiTopicVaultEncryptionKeyProviderConfig.builder()
-        .vaultConnectionConfig(VaultConnectionConfig.builder()
-            // use token or appRole
-            .token("dev-token")
-            .build())
+        .vaultConnectionConfig(vaultConnectionConfig)
         .configEntry(KafkaTopicConfigEntry.builder()
             .isDefault(true)
             .vaultPathTemplate("galapagos/local/galapagos_%TEAMNAME%/%TOPICNAME%")
