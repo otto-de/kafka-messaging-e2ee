@@ -1,3 +1,10 @@
+# [3.1.0](https://github.com/otto-de/kafka-messaging-e2ee/compare/v3.0.0...v3.1.0) (2026-08-05)
+
+
+### Features
+
+* **vault:** allow AWS IAM login to the vault ([a94ccca](https://github.com/otto-de/kafka-messaging-e2ee/commit/a94ccca61684768963fa23d1302a0ac9bb9bf3b5))
+
 # [3.0.0](https://github.com/otto-de/kafka-messaging-e2ee/compare/v2.3.2...v3.0.0) (2026-02-02)
 
 
