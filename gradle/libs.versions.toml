@@ -1,5 +1,5 @@
 [versions]
-jreleaserPlugInVersion = "1.25.0"
+jreleaserPlugInVersion = "1.26.0"
 
 jopenlibsVaultVersion = '6.2.2'
 slf4jVersion = '2.0.18'
