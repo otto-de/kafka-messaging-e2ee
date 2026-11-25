@@ -126,20 +126,20 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
 
       KeyVersion cachedKeyVersion = null;
       JsonObject cachedKeyEntry = findAtMostOneEntry(cacheEntries,
-          entry -> Objects.equals(topic, entry.getString(NAME_TOPIC))
-              && entry.getString(NAME_ENCRYPTION_KEY_ATTRIBUTE_NAME) != null
-              && entry.getString(NAME_EXPIRE_AT) != null,
+          entry -> Objects.equals(topic, entry.getString(NAME_TOPIC, null))
+              && entry.getString(NAME_ENCRYPTION_KEY_ATTRIBUTE_NAME, null) != null
+              && entry.getString(NAME_EXPIRE_AT, null) != null,
           this.sortByVersion());
 
       if (cachedKeyEntry != null) {
-        int version = cachedKeyEntry.getInt(NAME_VERSION);
+        int version = cachedKeyEntry.getInt(NAME_VERSION, 0);
         String encryptionKeyAttributeName = cachedKeyEntry.getString(
-            NAME_ENCRYPTION_KEY_ATTRIBUTE_NAME);
-        String encodedKey = cachedKeyEntry.getString(NAME_ENCODED_KEY);
+            NAME_ENCRYPTION_KEY_ATTRIBUTE_NAME, null);
+        String encodedKey = cachedKeyEntry.getString(NAME_ENCODED_KEY, null);
         cachedKeyVersion = new KeyVersion(version, encryptionKeyAttributeName, encodedKey);
 
         OffsetDateTime latestKeyVersionExpiredAt = OffsetDateTime.parse(
-                cachedKeyEntry.getString(NAME_EXPIRE_AT), DTF)
+                cachedKeyEntry.getString(NAME_EXPIRE_AT, null), DTF)
             // add up to 2 minutes, so we prevent peek cache expiration
             .plus(Math.round(Math.random() * 120_000), ChronoUnit.MILLIS);
 
@@ -198,14 +198,14 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
     try {
       List<JsonObject> cacheEntries = loadCacheEntries();
       JsonObject cachedKeyEntry = findAtMostOneEntry(cacheEntries,
-          entry -> Objects.equals(topic, entry.getString(NAME_TOPIC))
-              && version == entry.getInt(NAME_VERSION)
-              && entry.getString(NAME_EXPIRE_AT) == null
-              && entry.getString(NAME_ENCRYPTION_KEY_ATTRIBUTE_NAME) == null,
+          entry -> Objects.equals(topic, entry.getString(NAME_TOPIC, null))
+              && version == entry.getInt(NAME_VERSION, 0)
+              && entry.getString(NAME_EXPIRE_AT, null) == null
+              && entry.getString(NAME_ENCRYPTION_KEY_ATTRIBUTE_NAME, null) == null,
           this.noSortOrder());
 
       if (cachedKeyEntry != null) {
-        return cachedKeyEntry.getString(NAME_ENCODED_KEY);
+        return cachedKeyEntry.getString(NAME_ENCODED_KEY, null);
       }
 
       // fetch key for decryption from real vault
@@ -231,15 +231,15 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
     try {
       List<JsonObject> cacheEntries = loadCacheEntries();
       JsonObject cachedKeyEntry = findAtMostOneEntry(cacheEntries,
-          entry -> Objects.equals(topic, entry.getString(NAME_TOPIC))
-              && version == entry.getInt(NAME_VERSION)
-              && entry.getString(NAME_EXPIRE_AT) == null
+          entry -> Objects.equals(topic, entry.getString(NAME_TOPIC, null))
+              && version == entry.getInt(NAME_VERSION, 0)
+              && entry.getString(NAME_EXPIRE_AT, null) == null
               && Objects.equals(encryptionKeyAttributeName,
-              entry.getString(NAME_ENCRYPTION_KEY_ATTRIBUTE_NAME)),
+              entry.getString(NAME_ENCRYPTION_KEY_ATTRIBUTE_NAME, null)),
           this.noSortOrder());
 
       if (cachedKeyEntry != null) {
-        return cachedKeyEntry.getString(NAME_ENCODED_KEY);
+        return cachedKeyEntry.getString(NAME_ENCODED_KEY, null);
       }
 
       // fetch key for decryption from real vault
@@ -336,7 +336,7 @@ public final class CachedEncryptionKeyProvider implements EncryptionKeyProvider 
   }
 
   private Comparator<JsonObject> sortByVersion() {
-    return Comparator.comparingInt(entry -> entry.getInt(NAME_VERSION));
+    return Comparator.comparingInt(entry -> entry.getInt(NAME_VERSION, 0));
   }
 
   private Comparator<JsonObject> noSortOrder() {

@@ -136,8 +136,8 @@ public final class VaultEncryptionKeyProvider implements EncryptionKeyProvider {
 
   private int extractVersionFromResponse(LogicalResponse response) {
     JsonObject metadata = extractMetaDataObjectFromResponse(response);
-    Integer version = metadata.getInt("version");
-    if (version == null) {
+    int version = metadata.getInt("version", -1);
+    if (version == -1) {
       throw new VaultRuntimeException("Metadata.Version is not valid.");
     }
     return version;
@@ -145,7 +145,7 @@ public final class VaultEncryptionKeyProvider implements EncryptionKeyProvider {
 
   private OffsetDateTime extractCreationTimeFromResponse(LogicalResponse response) {
     JsonObject metadata = extractMetaDataObjectFromResponse(response);
-    String secretCreatedTime = metadata.getString("created_time");
+    String secretCreatedTime = metadata.getString("created_time", null);
     if (secretCreatedTime == null) {
       throw new VaultRuntimeException("Metadata.CreatedTime is not valid.");
     }
